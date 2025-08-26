@@ -31,7 +31,6 @@ export function ForgotForm() {
     setTimeout(() => {
       setIsLoading(false)
     }, 1000)
-  }
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -184,5 +183,5 @@ export function ForgotForm() {
         </div>
       </div>
     </div>
-  )
+  );
 }
