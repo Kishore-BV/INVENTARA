@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import type React from "react"
 
@@ -32,7 +32,6 @@ export function ForgotForm() {
       setIsLoading(false)
     }, 1000)
   }
-
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Spline background */}
@@ -44,7 +43,6 @@ export function ForgotForm() {
       {/* Centered floating card */}
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-md rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-2xl shadow-black/30">
-        <div className="w-full max-w-md">
           {!isSuccess ? (
             <div className="space-y-6">
               {/* Mobile logo */}
@@ -52,26 +50,26 @@ export function ForgotForm() {
                 <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mr-3">
                   <span className="text-white font-bold text-xl">C</span>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900">CMS Full Form</h1>
+                <h1 className="text-2xl font-bold text-slate-900">Inventara</h1>
               </div>
 
               <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-bold text-white mb-2">Forgot your password?</h2>
-                <p className="text-slate-200">
+                <h2 className="text-3xl font-bold text-slate-900 mb-2">Forgot your password?</h2>
+                <p className="text-slate-600">
                   No worries! Enter your email address and we'll send you a link to reset your password.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">Email address</Label>
+                  <Label htmlFor="email" className="text-slate-900">Email address</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Enter your email address"
-                      className="pl-10 bg-white/20 placeholder:text-slate-200 text-white border-white/30 focus-visible:ring-white"
+                      className="pl-10 bg-white placeholder:text-slate-400 text-slate-900 border-slate-300 focus-visible:ring-slate-900"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -79,7 +77,7 @@ export function ForgotForm() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-blue-700 hover:bg-blue-900 text-white" disabled={isLoading}>
                   {isLoading ? "Sending reset link..." : "Send reset link"}
                 </Button>
               </form>
@@ -87,7 +85,7 @@ export function ForgotForm() {
               <div className="text-center">
                 <Link
                   href="/auth/login"
-                  className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900"
+                  className="inline-flex items-center text-sm text-blue-700 hover:text-blue-900"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to sign in
@@ -101,7 +99,7 @@ export function ForgotForm() {
                 <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mr-3">
                   <span className="text-white font-bold text-xl">C</span>
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900">CMS Full Form</h1>
+                <h1 className="text-2xl font-bold text-slate-900">Inventara</h1>
               </div>
 
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
@@ -152,7 +150,7 @@ export function ForgotForm() {
 
                 <Link
                   href="/auth/login"
-                  className="inline-flex items-center text-sm text-slate-600 hover:text-slate-900"
+                  className="inline-flex items-center text-sm text-blue-700 hover:text-blue-900"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back to sign in
@@ -181,8 +179,6 @@ export function ForgotForm() {
           )}
         </div>
       </div>
-        </div>
-      </div>
     </div>
-  )
+  );
 }

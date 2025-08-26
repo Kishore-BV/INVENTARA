@@ -88,7 +88,7 @@ export const login = async (username: string, password: string): Promise<LoginRe
       email: userRecord.Email,
       firstName: mappedRole === 'admin' ? 'System' : 'User',
       lastName: mappedRole === 'admin' ? 'Administrator' : 'Manager',
-      department: mappedRole === 'admin' ? 'IT Administration' : 'Operations',
+              department: mappedRole === 'admin' ? 'IT Administration' : 'IT Support',
       employeeId: `EMP${String(userRecord.row_number || 1).padStart(3, '0')}`
     };
 
@@ -137,7 +137,7 @@ export const login = async (username: string, password: string): Promise<LoginRe
             email: foundUser.Email,
             firstName: foundUser.Role === 'admin' ? 'System' : 'User',
             lastName: foundUser.Role === 'admin' ? 'Administrator' : 'Manager', 
-            department: foundUser.Role === 'admin' ? 'IT Administration' : 'Operations',
+            department: foundUser.Role === 'admin' ? 'IT Administration' : 'IT Support',
             employeeId: `EMP${String(foundUser.row_number).padStart(3, '0')}`
           }
         };

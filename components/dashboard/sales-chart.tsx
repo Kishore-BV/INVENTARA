@@ -18,7 +18,7 @@ const inventoryData = {
   labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
   datasets: [
     {
-      label: "Stock Value ($000)",
+              label: "Stock Value (₹000)",
       data: [220, 235, 210, 245, 230, 265, 250, 280, 275, 295, 285, 310],
       borderColor: "rgb(59, 130, 246)",
       backgroundColor: "rgba(59, 130, 246, 0.1)",

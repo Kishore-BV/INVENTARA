@@ -3,7 +3,7 @@ import { InboundTransactionsContent } from "@/components/transactions/inbound-tr
 
 export const metadata: Metadata = {
   title: "Inbound Transactions - Inventara",
-  description: "Manage incoming inventory transactions and receipts",
+  description: "Manage inbound stock transactions and receipts",
 }
 
 export default function InboundTransactionsPage() {

@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export function AuthBrandSection() {
   const backgroundPattern =
     "data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"
@@ -9,12 +11,10 @@ export function AuthBrandSection() {
 
       <div className="relative z-10 flex flex-col justify-center px-12 py-16 text-white">
         <div className="mb-8">
-          <div className="flex items-center mb-6">
-            <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center mr-4">
-              <span className="text-slate-900 font-bold text-xl">C</span>
-            </div>
-            <h1 className="text-2xl font-bold">CMS Full Form</h1>
-          </div>
+          <Link href="/dashboard" className="flex items-center mb-6">
+            <img src="/INVENTARA-logo-transparent.png" alt="Inventara Logo" className="h-12 w-12 mr-4" />
+            <h1 className="text-2xl font-bold">Inventara</h1>
+          </Link>
           <h2 className="text-2xl font-bold mb-6 leading-tight">Powerful Content Management System</h2>
           <p className="text-xl text-slate-300 mb-8 leading-relaxed">
             Streamline your content creation, manage multiple websites, and boost your productivity with our
@@ -74,7 +74,7 @@ export function AuthBrandSection() {
 
         <div className="mt-12 pt-8 border-t border-slate-700">
           <p className="text-slate-400 text-sm">
-            "CMS Full Form has transformed how we manage our content. The intuitive interface and powerful features make
+            "Inventara has transformed how we manage our inventory. The intuitive interface and powerful features make
             it a joy to use."
           </p>
           <div className="flex items-center mt-4">

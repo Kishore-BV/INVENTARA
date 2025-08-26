@@ -332,11 +332,11 @@ export function UserManagementDashboard({ className }: UserManagementDashboardPr
   }
 
   const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString()
+    return new Date(date).toLocaleDateString('en-US')
   }
 
   const formatDateTime = (date: Date | string) => {
-    return new Date(date).toLocaleString()
+    return new Date(date).toLocaleString('en-US')
   }
 
   if (loading) {

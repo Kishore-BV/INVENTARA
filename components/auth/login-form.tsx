@@ -46,6 +46,8 @@ export function LoginForm() {
         <iframe src="https://my.spline.design/genkubgreetingrobot-RbwSkoEF7bvgjcB11aWgjFaw/" frameBorder="0" width="100%" height="100%" style={{position:'absolute',inset:0,width:'100%',height:'100%',zIndex:-1}} allowFullScreen />
         {/* Readability overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/35 to-slate-950/70" />
+        {/* Hide Spline logo (bottom right) */}
+        <div className="absolute right-2 bottom-2 w-32 h-10 bg-white/90 rounded-lg shadow-lg z-10" style={{backdropFilter:'blur(6px)'}} />
       </div>
 
       {/* Centered floating card */}
