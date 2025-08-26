@@ -2,8 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import dynamic from "next/dynamic"
-const Spline = dynamic(() => import("@splinetool/react-spline").then(mod => mod.default), { ssr: false })
+import Spline from "@splinetool/react-spline"
 import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,19 +42,19 @@ export function LoginForm() {
     <div className="relative min-h-screen overflow-hidden">
       {/* Spline background */}
       <div className="absolute inset-0 -z-10">
-  {/* Use your Spline scene link here */}
-  <Spline scene="https://prod.spline.design/genkubgreetingrobot-RbwSkoEF7bvgjcB11aWgjFaw/scene.splinecode" />
+        {/* Use your Spline scene link here */}
+        <iframe src="https://my.spline.design/genkubgreetingrobot-RbwSkoEF7bvgjcB11aWgjFaw/" frameBorder="0" width="100%" height="100%" style={{position:'absolute',inset:0,width:'100%',height:'100%',zIndex:-1}} allowFullScreen />
         {/* Readability overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/35 to-slate-950/70" />
       </div>
 
       {/* Centered floating card */}
       <div className="flex min-h-screen items-center justify-center p-6">
-        <div className="w-full max-w-md rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-2xl shadow-black/30">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-black/10">
           {/* Header */}
           <div className="px-6 pt-6 text-center">
-            <h2 className="text-3xl font-bold text-white">Welcome back</h2>
-            <p className="mt-2 text-slate-200/80">
+            <h2 className="text-3xl font-bold text-slate-900">Welcome back</h2>
+            <p className="mt-2 text-slate-600">
               Sign in to continue managing your inventory
             </p>
           </div>
@@ -63,14 +62,14 @@ export function LoginForm() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-6">
             <div>
-              <Label htmlFor="username" className="text-slate-100">Email</Label>
+              <Label htmlFor="username" className="text-slate-900">Email</Label>
               <div className="relative mt-1">
                 <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-200/70" />
                 <Input
                   id="username"
                   type="email"
                   required
-                  className="pl-10 bg-white/70 placeholder:text-slate-500 text-slate-900 border-white/30 focus-visible:ring-slate-900"
+                  className="pl-10 bg-white placeholder:text-slate-400 text-slate-900 border-slate-300 focus-visible:ring-slate-900"
                   placeholder="Enter your email"
                   value={formData.username}
                   onChange={(e) => setFormData((p) => ({ ...p, username: e.target.value }))}
@@ -79,14 +78,14 @@ export function LoginForm() {
             </div>
 
             <div>
-              <Label htmlFor="password" className="text-slate-100">Password</Label>
+              <Label htmlFor="password" className="text-slate-900">Password</Label>
               <div className="relative mt-1">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-200/70" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  className="pl-10 pr-10 bg-white/70 placeholder:text-slate-500 text-slate-900 border-white/30 focus-visible:ring-slate-900"
+                  className="pl-10 pr-10 bg-white placeholder:text-slate-400 text-slate-900 border-slate-300 focus-visible:ring-slate-900"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) => setFormData((p) => ({ ...p, password: e.target.value }))}
@@ -111,25 +110,25 @@ export function LoginForm() {
                     setFormData((p) => ({ ...p, rememberMe: checked as boolean }))
                   }
                 />
-                <Label htmlFor="remember" className="text-sm text-slate-200">
+                <Label htmlFor="remember" className="text-sm text-slate-900">
                   Remember me
                 </Label>
               </div>
-              <Link href="/auth/forgot" className="text-sm font-medium text-white hover:opacity-90">
+              <Link href="/auth/forgot" className="text-sm font-medium text-blue-700 hover:text-blue-900">
                 Forgot password?
               </Link>
             </div>
 
             <Button
               type="submit"
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white"
+              className="w-full bg-blue-700 hover:bg-blue-900 text-white"
               disabled={isLoading}
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>
 
             {error && (
-              <p className="text-sm text-red-300 text-center" role="alert">
+              <p className="text-sm text-red-600 text-center" role="alert">
                 {error}
               </p>
             )}

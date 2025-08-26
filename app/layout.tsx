@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ChatbotWidget } from "@/components/ui/chatbot-widget"
+import { Chatbot } from "@/components/chatbot"
 import { AuthProvider } from "@/contexts/auth-context"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -14,16 +14,22 @@ export const metadata: Metadata = {
   generator: 'v0.app'
 }
 
+import { usePathname } from "next/navigation";
 
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const pathname = usePathname();
+  const showChatbot = pathname !== "/auth/login" && pathname !== "/auth/forgot";
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           <AuthProvider>
             {children}
-            <ChatbotWidget />
+            {showChatbot && <Chatbot />}
           </AuthProvider>
         </ThemeProvider>
       </body>

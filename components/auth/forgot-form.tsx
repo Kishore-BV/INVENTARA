@@ -34,9 +34,16 @@ export function ForgotForm() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      <AuthBrandSection />
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Spline background */}
+      <div className="absolute inset-0 -z-10">
+        <iframe src="https://my.spline.design/genkubgreetingrobot-RbwSkoEF7bvgjcB11aWgjFaw/" frameBorder="0" width="100%" height="100%" style={{position:'absolute',inset:0,width:'100%',height:'100%',zIndex:-1}} allowFullScreen />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/35 to-slate-950/70" />
+      </div>
+
+      {/* Centered floating card */}
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <div className="w-full max-w-md rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-2xl shadow-black/30">
         <div className="w-full max-w-md">
           {!isSuccess ? (
             <div className="space-y-6">
@@ -49,22 +56,22 @@ export function ForgotForm() {
               </div>
 
               <div className="text-center lg:text-left">
-                <h2 className="text-3xl font-bold text-slate-900 mb-2">Forgot your password?</h2>
-                <p className="text-slate-600">
+                <h2 className="text-3xl font-bold text-white mb-2">Forgot your password?</h2>
+                <p className="text-slate-200">
                   No worries! Enter your email address and we'll send you a link to reset your password.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email address</Label>
+                  <Label htmlFor="email" className="text-white">Email address</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Enter your email address"
-                      className="pl-10"
+                      className="pl-10 bg-white/20 placeholder:text-slate-200 text-white border-white/30 focus-visible:ring-white"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -72,7 +79,7 @@ export function ForgotForm() {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white" disabled={isLoading}>
                   {isLoading ? "Sending reset link..." : "Send reset link"}
                 </Button>
               </form>
@@ -102,32 +109,32 @@ export function ForgotForm() {
               </div>
 
               <div>
-                <h2 className="text-3xl font-bold text-slate-900 mb-2">Check your email</h2>
-                <p className="text-slate-600 mb-4">
+                <h2 className="text-3xl font-bold text-white mb-2">Check your email</h2>
+                <p className="text-slate-200 mb-4">
                   We've sent a password reset link to <strong>{email}</strong>
                 </p>
               </div>
 
               <div className="bg-slate-50 rounded-lg p-6 text-left">
-                <h3 className="font-semibold text-slate-900 mb-4">What's next?</h3>
+                <h3 className="font-semibold text-white mb-4">What's next?</h3>
                 <div className="space-y-3">
                   <div className="flex items-start space-x-3">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-blue-600">1</span>
                     </div>
-                    <p className="text-sm text-slate-600">Check your email inbox (and spam folder)</p>
+                    <p className="text-sm text-slate-200">Check your email inbox (and spam folder)</p>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-blue-600">2</span>
                     </div>
-                    <p className="text-sm text-slate-600">Click the reset password link in the email</p>
+                    <p className="text-sm text-slate-200">Click the reset password link in the email</p>
                   </div>
                   <div className="flex items-start space-x-3">
                     <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-medium text-blue-600">3</span>
                     </div>
-                    <p className="text-sm text-slate-600">Create a new password and sign in</p>
+                    <p className="text-sm text-slate-200">Create a new password and sign in</p>
                   </div>
                 </div>
               </div>
@@ -138,7 +145,7 @@ export function ForgotForm() {
                   variant="outline"
                   onClick={handleResendEmail}
                   disabled={isLoading}
-                  className="w-full bg-transparent"
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white"
                 >
                   {isLoading ? "Resending..." : "Resend email"}
                 </Button>
@@ -152,8 +159,8 @@ export function ForgotForm() {
                 </Link>
               </div>
 
-              <div className="border-t border-slate-200 pt-6">
-                <div className="flex items-center justify-center space-x-6 text-sm text-slate-500">
+              <div className="border-t border-white/20 pt-6">
+                <div className="flex items-center justify-center space-x-6 text-sm text-slate-200">
                   <div className="flex items-center space-x-2">
                     <Clock className="w-4 h-4" />
                     <span>Link expires in 24h</span>
@@ -163,15 +170,17 @@ export function ForgotForm() {
                     <span>Secure & encrypted</span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 mt-4">
+                <p className="text-xs text-slate-200 mt-4">
                   Need help?{" "}
-                  <Link href="/support" className="text-slate-600 hover:text-slate-900">
+                  <Link href="/support" className="text-blue-200 hover:text-blue-400">
                     Contact support
                   </Link>
                 </p>
               </div>
             </div>
           )}
+        </div>
+      </div>
         </div>
       </div>
     </div>
