@@ -263,7 +263,7 @@ export function AttendanceDashboard({ className }: AttendanceDashboardProps) {
   }
 
   const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString()
+    return new Date(date).toLocaleDateString('en-US')
   }
 
   const formatDuration = (hours: number) => {

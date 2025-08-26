@@ -724,7 +724,7 @@ export function WarehouseManagement({ className }: WarehouseManagementProps) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {new Date(warehouse.createdAt).toLocaleDateString()}
+                        {new Date(warehouse.createdAt).toLocaleDateString('en-US')}
                       </TableCell>
                       <TableCell>
                         <DropdownMenu>

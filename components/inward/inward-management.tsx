@@ -294,7 +294,7 @@ export function InwardManagement({ className }: InwardManagementProps) {
   }
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString()
+    return new Date(date).toLocaleDateString('en-US')
   }
 
   if (loading) {

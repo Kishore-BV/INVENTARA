@@ -1,9 +1,9 @@
-# Cms Full Form - Dashboard CmsFu
+# Inventara - Dashboard
 
 *Automatically synced with your [v0.app](https://v0.app) deployments*
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/kishore-bvs-projects/v0-cms-full-form-dashboard-cms-fu)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/uOrkO7JtJ7c)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/kishore-bvs-projects/inventara-dashboard)
+[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/projects/inventara)
 
 ## Overview
 
@@ -14,13 +14,13 @@ Any changes you make to your deployed app will be automatically pushed to this r
 
 Your project is live at:
 
-**[https://vercel.com/kishore-bvs-projects/v0-cms-full-form-dashboard-cms-fu](https://vercel.com/kishore-bvs-projects/v0-cms-full-form-dashboard-cms-fu)**
+**[https://vercel.com/kishore-bvs-projects/inventara-dashboard](https://vercel.com/kishore-bvs-projects/inventara-dashboard)**
 
 ## Build your app
 
 Continue building your app on:
 
-**[https://v0.app/chat/projects/uOrkO7JtJ7c](https://v0.app/chat/projects/uOrkO7JtJ7c)**
+**[https://v0.app/chat/projects/inventara](https://v0.app/chat/projects/inventara)**
 
 ## How It Works
 

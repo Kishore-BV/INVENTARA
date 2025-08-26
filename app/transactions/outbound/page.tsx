@@ -3,7 +3,7 @@ import { OutboundTransactionsContent } from "@/components/transactions/outbound-
 
 export const metadata: Metadata = {
   title: "Outbound Transactions - Inventara",
-  description: "Manage outgoing inventory transactions and shipments",
+  description: "Manage outbound stock transactions and issues",
 }
 
 export default function OutboundTransactionsPage() {

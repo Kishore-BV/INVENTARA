@@ -61,10 +61,12 @@ import {
   TrendingDown,
   Puzzle,
   AlertTriangle,
+  CheckSquare,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog"
 
 type MenuState = "full" | "collapsed" | "hidden"
 
@@ -107,12 +109,6 @@ const menuData: MenuSection[] = [
         badge: "3",
         children: [
           {
-            id: "inventory-overview",
-            label: "Inventory Overview",
-            href: "/dashboard/inventory",
-            icon: Package,
-          },
-          {
             id: "stock-reports",
             label: "Stock Reports",
             href: "/dashboard/reports",
@@ -129,12 +125,6 @@ const menuData: MenuSection[] = [
                 label: "Movement Reports",
                 href: "/dashboard/reports/movements",
                 icon: TrendingUp,
-              },
-              {
-                id: "valuation-reports",
-                label: "Valuation Reports",
-                href: "/dashboard/reports/valuation",
-                icon: DollarSign,
               },
             ],
           },
@@ -185,6 +175,78 @@ const menuData: MenuSection[] = [
         href: "/warehouses",
         icon: Building2,
         badge: "3",
+      },
+    ],
+  },
+  {
+    id: "erp",
+    label: "ERP",
+    items: [
+      {
+        id: "projects",
+        label: "Projects",
+        href: "/projects",
+        icon: Folder,
+      },
+      {
+        id: "tasks",
+        label: "Tasks",
+        href: "/projects/tasks",
+        icon: CheckSquare,
+      },
+      {
+        id: "timelines",
+        label: "Timelines",
+        href: "/projects/timelines",
+        icon: Calendar,
+      },
+      {
+        id: "budgets",
+        label: "Budgets",
+        href: "/projects/budgets",
+        icon: DollarSign,
+      },
+      {
+        id: "resources",
+        label: "Resources",
+        href: "/projects/resources",
+        icon: Users2,
+      },
+    ],
+  },
+  {
+    id: "crm",
+    label: "CRM",
+    items: [
+      {
+        id: "customers",
+        label: "Customers",
+        href: "/crm/customers",
+        icon: Users,
+      },
+      {
+        id: "leads",
+        label: "Leads",
+        href: "/crm/leads",
+        icon: Target,
+      },
+      {
+        id: "opportunities",
+        label: "Opportunities",
+        href: "/crm/opportunities",
+        icon: TrendingUp,
+      },
+      {
+        id: "sales",
+        label: "Sales",
+        href: "/crm/sales",
+        icon: DollarSign,
+      },
+      {
+        id: "reports",
+        label: "Reports",
+        href: "/crm/reports",
+        icon: BarChart3,
       },
     ],
   },
@@ -271,10 +333,10 @@ const menuData: MenuSection[] = [
             icon: Truck,
           },
           {
-            id: "adjustments",
-            label: "Adjustments",
-            href: "/transactions/adjustments",
-            icon: Edit,
+            id: "movement-reports",
+            label: "Movement Reports",
+            href: "/dashboard/reports/movements",
+            icon: TrendingUp,
           },
         ],
       },
@@ -399,90 +461,6 @@ const menuData: MenuSection[] = [
     ],
   },
   {
-    id: "operations",
-    label: "Operations",
-    items: [
-      {
-        id: "cycle-counting",
-        label: "Cycle Counting",
-        href: "/cycle-counting",
-        icon: Search,
-        children: [
-          {
-            id: "count-schedules",
-            label: "Count Schedules",
-            href: "/cycle-counting/schedules",
-            icon: Calendar,
-          },
-          {
-            id: "count-sheets",
-            label: "Count Sheets",
-            href: "/cycle-counting/sheets",
-            icon: FileText,
-          },
-          {
-            id: "discrepancies",
-            label: "Discrepancies",
-            href: "/cycle-counting/discrepancies",
-            icon: AlertTriangle,
-          },
-        ],
-      },
-      {
-        id: "picking",
-        label: "Picking & Packing",
-        href: "/picking",
-        icon: Package,
-        children: [
-          {
-            id: "pick-lists",
-            label: "Pick Lists",
-            href: "/picking/lists",
-            icon: FileText,
-          },
-          {
-            id: "pick-waves",
-            label: "Pick Waves",
-            href: "/picking/waves",
-            icon: Layers,
-          },
-          {
-            id: "packing",
-            label: "Packing",
-            href: "/picking/packing",
-            icon: Package,
-          },
-        ],
-      },
-      {
-        id: "shipping",
-        label: "Shipping",
-        href: "/shipping",
-        icon: Truck,
-        children: [
-          {
-            id: "shipments",
-            label: "Shipments",
-            href: "/shipping/shipments",
-            icon: Truck,
-          },
-          {
-            id: "carriers",
-            label: "Carriers",
-            href: "/shipping/carriers",
-            icon: Users2,
-          },
-          {
-            id: "tracking",
-            label: "Tracking",
-            href: "/shipping/tracking",
-            icon: Eye,
-          },
-        ],
-      },
-    ],
-  },
-  {
     id: "team",
     label: "Team Management",
     items: [
@@ -530,6 +508,12 @@ const menuData: MenuSection[] = [
             href: "/users/permissions",
             icon: Lock,
           },
+          {
+            id: "attendance",
+            label: "Attendance Management",
+            href: "/users/attendance",
+            icon: Calendar,
+          },
         ],
       },
       {
@@ -571,12 +555,6 @@ const menuData: MenuSection[] = [
         href: "/integrations",
         icon: Layers,
         children: [
-          {
-            id: "erp-systems",
-            label: "ERP Systems",
-            href: "/integrations/erp",
-            icon: Database,
-          },
           {
             id: "barcode-scanners",
             label: "Barcode Scanners",
@@ -738,6 +716,8 @@ export default function InventaraSidebar() {
         onClick={() => {
           if (hasChildren) {
             toggleExpanded(itemId)
+          } else if (item.id === "real-time-tracking") {
+            // alert("Real-time Tracking is coming soon!") // Removed alert
           } else if (item.href) {
             // Navigate to the href
             window.location.href = item.href
@@ -785,7 +765,23 @@ export default function InventaraSidebar() {
 
     return (
       <div>
-        {item.href && !hasChildren ? <Link href={item.href}>{content}</Link> : content}
+        {item.id === "real-time-tracking" ? (
+          <Dialog>
+            <DialogTrigger asChild>{content}</DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Coming Soon!</DialogTitle>
+                <DialogDescription>
+                  Real-time Tracking is under development and will be available shortly.
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        ) : item.href && !hasChildren ? (
+          <Link href={item.href}>{content}</Link>
+        ) : (
+          content
+        )}
         {hasChildren && isExpanded && showText && (
           <div className="mt-1 space-y-1">
             {item.children!.map((child) => (
@@ -827,7 +823,7 @@ export default function InventaraSidebar() {
           <div className="h-full flex flex-col">
             {/* Header */}
             <div className="h-16 px-3 flex items-center border-b border-gray-200 dark:border-[#1F1F23]">
-              <div className="flex items-center gap-3 w-full">
+              <Link href="/dashboard" className="flex items-center gap-3 w-full">
   <img
     src="/INVENTARA-logo-transparent.png"
     alt="Inventara"
@@ -838,7 +834,7 @@ export default function InventaraSidebar() {
   <span className="text-lg font-semibold hover:cursor-pointer text-gray-900 dark:text-white">
     Inventara
   </span>
-</div>
+</Link>
             </div>
 
             <div
@@ -873,10 +869,17 @@ export default function InventaraSidebar() {
           </div>
         </nav>
 
-        {/* Mobile overlay backdrop */}
-        {isMobileMenuOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-[65]" onClick={() => setIsMobileMenuOpen(false)} />
-        )}
+        {/* Coming Soon Dialog */}
+        <Dialog>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Coming Soon!</DialogTitle>
+              <DialogDescription>
+                Real-time Tracking is under development and will be available shortly.
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </>
     )
   }
@@ -901,9 +904,7 @@ export default function InventaraSidebar() {
           <div className="h-16 px-3 flex items-center border-b border-gray-200 dark:border-[#1F1F23]">
             {showText ? (
               <Link
-                href="https://cmsfullform.com/"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/dashboard"
                 className="flex items-center gap-3 w-full"
               >
                 <img
@@ -925,7 +926,7 @@ export default function InventaraSidebar() {
                 </span>
               </Link>
             ) : (
-              <div className="flex justify-center w-full">
+              <Link href="/dashboard" className="flex justify-center w-full">
                 <img
   src="/INVENTARA-logo-transparent.png"
   alt="Inventara"
@@ -940,7 +941,7 @@ export default function InventaraSidebar() {
   height={32}
   className="flex-shrink-0 block dark:hidden"
 />
-              </div>
+              </Link>
             )}
           </div>
 
@@ -977,6 +978,18 @@ export default function InventaraSidebar() {
           </div>
         </div>
       )}
+
+      {/* Coming Soon Dialog */}
+      <Dialog>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Coming Soon!</DialogTitle>
+            <DialogDescription>
+              Real-time Tracking is under development and will be available shortly.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </nav>
   )
 }

@@ -151,7 +151,7 @@ export interface PickingType {
   defaultLocationDestId: Location
   isActive: boolean
   showReserved: boolean
-  showOperations: boolean
+
   useCreateLots: boolean
   useExistingLots: boolean
   barcode?: string

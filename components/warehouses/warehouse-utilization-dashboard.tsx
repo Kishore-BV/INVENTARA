@@ -846,7 +846,7 @@ export function WarehouseUtilizationDashboard({ className }: UtilizationDashboar
                           <div className="text-xs text-muted-foreground mt-1">
                             <span>{alert.location}</span>
                             <span className="mx-2">•</span>
-                            <span>{alert.timestamp.toLocaleString()}</span>
+                            <span>{alert.timestamp.toLocaleString('en-US')}</span>
                           </div>
                         </div>
                       </div>

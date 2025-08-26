@@ -15,7 +15,7 @@ interface StatCard {
 const stats: StatCard[] = [
   {
     title: "Total Stock Value",
-    value: "$245,890",
+            value: "₹2,05,00,000",
     change: "+12.3%",
     changeType: "increase",
     icon: <Package className="h-4 w-4" />,
