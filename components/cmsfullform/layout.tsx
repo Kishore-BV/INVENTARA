@@ -5,6 +5,7 @@ import Sidebar from "./sidebar"
 import TopNav from "./top-nav"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
+import { Chatbot } from "@/components/chatbot"
 
 interface LayoutProps {
   children: ReactNode
@@ -82,7 +83,7 @@ export default function Layout({ children }: LayoutProps) {
         </header>
         <main className="flex-1 overflow-auto p-3 sm:p-6 bg-white dark:bg-[#0F0F12] min-w-0">{children}</main>
       </div>
-
+      <Chatbot />
     </div>
   )
 }

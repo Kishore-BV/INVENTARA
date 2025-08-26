@@ -47,7 +47,9 @@ export function LoginForm() {
         {/* Readability overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/35 to-slate-950/70" />
         {/* Hide Spline logo (bottom right) */}
-        <div className="absolute right-2 bottom-2 w-32 h-10 bg-white/90 rounded-lg shadow-lg z-10" style={{backdropFilter:'blur(6px)'}} />
+        <div className="absolute right-2 bottom-2 w-40 h-12 bg-white/95 rounded-lg shadow-lg z-10 flex items-center justify-center" style={{backdropFilter:'blur(8px)'}}>
+          <span className="text-xs text-gray-600 font-medium">Inventara</span>
+        </div>
       </div>
 
       {/* Centered floating card */}

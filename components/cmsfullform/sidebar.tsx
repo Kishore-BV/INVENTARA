@@ -62,6 +62,8 @@ import {
   Puzzle,
   AlertTriangle,
   CheckSquare,
+  Users,
+  BarChart3,
 } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
