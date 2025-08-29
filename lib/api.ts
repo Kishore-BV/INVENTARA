@@ -178,3 +178,19 @@ export const getProfile = async (token: string) => {
 
   return response.json();
 };
+
+export interface StockLevelRecord {
+  [key: string]: any
+}
+
+export const fetchStockLevels = async (): Promise<StockLevelRecord[]> => {
+  const url = typeof window !== 'undefined' 
+    ? `/api/stock-levels`
+    : `${API_BASE_URL}/stock-levels`
+
+  const res = await fetch(url, { cache: 'no-store' })
+  if (!res.ok) {
+    throw new Error(`Failed to fetch stock levels (${res.status})`)
+  }
+  return res.json()
+}

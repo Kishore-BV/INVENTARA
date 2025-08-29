@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { 
   Target, 
   Plus, 
@@ -146,13 +146,28 @@ const getStatusIcon = (status: Lead["status"]) => {
 }
 
 export function LeadsContent() {
+  const [leadsState, setLeadsState] = useState<Lead[]>(leads)
   const [selectedStatus, setSelectedStatus] = useState<Lead["status"] | "all">("all")
   const [selectedSource, setSelectedSource] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [newLead, setNewLead] = useState<Omit<Lead, "id" | "createdDate" | "lastContact"> & { createdDate?: string; lastContact?: string}>(
+    {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      source: "Website",
+      status: "new",
+      value: 0,
+      assignedTo: "",
+      notes: ""
+    }
+  )
 
-  const filteredLeads = leads.filter(lead => {
+  const filteredLeads = leadsState.filter(lead => {
     if (selectedStatus !== "all" && lead.status !== selectedStatus) return false
     if (selectedSource !== "all" && lead.source !== selectedSource) return false
     if (searchQuery && !lead.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -161,12 +176,12 @@ export function LeadsContent() {
     return true
   })
 
-  const totalLeads = leads.length
-  const newLeads = leads.filter(l => l.status === "new").length
-  const qualifiedLeads = leads.filter(l => l.status === "qualified").length
-  const totalValue = leads.reduce((sum, l) => sum + l.value, 0)
+  const totalLeads = leadsState.length
+  const newLeads = leadsState.filter(l => l.status === "new").length
+  const qualifiedLeads = leadsState.filter(l => l.status === "qualified").length
+  const totalValue = leadsState.reduce((sum, l) => sum + l.value, 0)
 
-  const uniqueSources = Array.from(new Set(leads.map(l => l.source)))
+  const uniqueSources = Array.from(new Set(leadsState.map(l => l.source)))
 
   const exportToCSV = () => {
     const headers = ["Name", "Company", "Email", "Phone", "Source", "Status", "Value", "Assigned To", "Created Date"]
@@ -199,6 +214,37 @@ export function LeadsContent() {
     setIsViewDialogOpen(true)
   }
 
+  const handleAddLead = () => {
+    if (!newLead.name || !newLead.email || !newLead.company) return
+    const leadToAdd: Lead = {
+      id: `lead-${Date.now()}`,
+      name: newLead.name,
+      email: newLead.email,
+      phone: newLead.phone,
+      company: newLead.company,
+      source: newLead.source,
+      status: newLead.status,
+      value: Number(newLead.value) || 0,
+      assignedTo: newLead.assignedTo,
+      createdDate: newLead.createdDate || new Date().toISOString().split('T')[0],
+      lastContact: newLead.lastContact || new Date().toISOString().split('T')[0],
+      notes: newLead.notes
+    }
+    setLeadsState(prev => [leadToAdd, ...prev])
+    setIsAddDialogOpen(false)
+    setNewLead({
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      source: "Website",
+      status: "new",
+      value: 0,
+      assignedTo: "",
+      notes: ""
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6 md:p-8">
       {/* Header with Home Button */}
@@ -220,7 +266,7 @@ export function LeadsContent() {
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
-          <Button className="bg-[#4B6587] hover:bg-[#3A5068]">
+          <Button className="bg-[#4B6587] hover:bg-[#3A5068]" onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Lead
           </Button>
@@ -415,6 +461,78 @@ export function LeadsContent() {
       </Card>
 
       {/* Lead Details Dialog */}
+      {/* Add Lead Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Lead</DialogTitle>
+            <DialogDescription>Enter lead details</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input value={newLead.name} onChange={(e) => setNewLead({ ...newLead, name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Company *</Label>
+              <Input value={newLead.company} onChange={(e) => setNewLead({ ...newLead, company: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input type="email" value={newLead.email} onChange={(e) => setNewLead({ ...newLead, email: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input value={newLead.phone} onChange={(e) => setNewLead({ ...newLead, phone: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Source</Label>
+              <select
+                className="w-full px-3 py-2 border rounded-md"
+                value={newLead.source}
+                onChange={(e) => setNewLead({ ...newLead, source: e.target.value })}
+              >
+                {uniqueSources.concat(["Website","Referral","Social Media","Cold Call"]).filter((v,i,a)=>a.indexOf(v)===i).map(src => (
+                  <option key={src} value={src}>{src}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <select
+                className="w-full px-3 py-2 border rounded-md"
+                value={newLead.status}
+                onChange={(e) => setNewLead({ ...newLead, status: e.target.value as Lead["status"] })}
+              >
+                <option value="new">New</option>
+                <option value="contacted">Contacted</option>
+                <option value="qualified">Qualified</option>
+                <option value="proposal">Proposal</option>
+                <option value="negotiation">Negotiation</option>
+                <option value="won">Won</option>
+                <option value="lost">Lost</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Value</Label>
+              <Input type="number" value={newLead.value} onChange={(e) => setNewLead({ ...newLead, value: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Assigned To</Label>
+              <Input value={newLead.assignedTo} onChange={(e) => setNewLead({ ...newLead, assignedTo: e.target.value })} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Notes</Label>
+              <Input value={newLead.notes} onChange={(e) => setNewLead({ ...newLead, notes: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddLead}>Add Lead</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
@@ -489,3 +607,4 @@ export function LeadsContent() {
     </div>
   )
 }
+

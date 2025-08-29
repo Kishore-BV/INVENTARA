@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice {{invoice.number}}</title>
+    <link rel="stylesheet" href="invoice_a4.css">
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="invoice-header">
+            <div class="invoice-title">TAX INVOICE</div>
+            <div class="invoice-meta">
+                <div class="invoice-details">
+                    <h4>Invoice Details</h4>
+                    <div><strong>Invoice No:</strong> {{invoice.number}}</div>
+                    <div><strong>Date:</strong> {{invoice.date}}</div>
+                    {{#if invoice.dueDate}}<div><strong>Due Date:</strong> {{invoice.dueDate}}</div>{{/if}}
+                    <div><strong>Place of Supply:</strong> {{invoice.placeOfSupply}} - {{seller.stateName}}</div>
+                    {{#if invoice.reverseCharge}}<div class="rcm-notice"><strong>Reverse Charge Applicable</strong></div>{{/if}}
+                </div>
+                {{#if invoice.irn}}
+                <div class="irn-details">
+                    <h4>E-Invoice Details</h4>
+                    <div><strong>IRN:</strong> {{invoice.irn}}</div>
+                    <div><strong>Ack No:</strong> {{invoice.ackNo}}</div>
+                    <div><strong>Ack Date:</strong> {{invoice.ackDate}}</div>
+                </div>
+                {{/if}}
+            </div>
+        </div>
+
+        <!-- Seller and Buyer Details -->
+        <div class="party-section">
+            <div class="seller-details">
+                <div class="party-title">Seller Details</div>
+                <div class="party-name">{{seller.name}}</div>
+                <div class="party-address">
+                    {{seller.address.line1}}<br>
+                    {{#if seller.address.line2}}{{seller.address.line2}}<br>{{/if}}
+                    {{seller.address.city}}, {{seller.address.state}} - {{seller.address.pincode}}
+                </div>
+                <div class="party-gstin">GSTIN: {{seller.gstin}}</div>
+                <div class="party-state">State: {{seller.stateCode}} - {{seller.stateName}}</div>
+                {{#if seller.email}}<div>Email: {{seller.email}}</div>{{/if}}
+                {{#if seller.phone}}<div>Phone: {{seller.phone}}</div>{{/if}}
+            </div>
+            <div class="buyer-details">
+                <div class="party-title">Buyer Details</div>
+                <div class="party-name">{{buyer.name}}</div>
+                <div class="party-address">
+                    {{buyer.address.line1}}<br>
+                    {{#if buyer.address.line2}}{{buyer.address.line2}}<br>{{/if}}
+                    {{buyer.address.city}}, {{buyer.address.state}} - {{buyer.address.pincode}}
+                </div>
+                {{#if buyer.gstin}}<div class="party-gstin">GSTIN: {{buyer.gstin}}</div>{{/if}}
+                <div class="party-state">State: {{buyer.stateCode}} - {{buyer.stateName}}</div>
+                {{#if buyer.email}}<div>Email: {{buyer.email}}</div>{{/if}}
+                {{#if buyer.phone}}<div>Phone: {{buyer.phone}}</div>{{/if}}
+            </div>
+        </div>
+
+        <!-- Line Items -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.</th>
+                    <th style="width: 25%;">Description</th>
+                    <th style="width: 10%;">HSN Code</th>
+                    <th style="width: 8%;">Qty</th>
+                    <th style="width: 8%;">Unit</th>
+                    <th style="width: 10%;">Unit Price</th>
+                    <th style="width: 8%;">Discount</th>
+                    <th style="width: 10%;">Taxable Value</th>
+                    <th style="width: 8%;">CGST</th>
+                    <th style="width: 8%;">SGST</th>
+                    <th style="width: 8%;">IGST</th>
+                    <th style="width: 8%;">CESS</th>
+                    <th style="width: 12%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each lineItems}}
+                <tr>
+                    <td>{{@index}}</td>
+                    <td class="text-left">{{description}}</td>
+                    <td>{{hsnCode}}</td>
+                    <td class="text-right">{{quantity}}</td>
+                    <td>{{unit}}</td>
+                    <td class="text-right">{{unitPrice}}</td>
+                    <td class="text-right">{{discount}}</td>
+                    <td class="text-right">{{taxableValue}}</td>
+                    <td class="text-right">
+                        {{#if taxBreakup.cgst.amount}}{{taxBreakup.cgst.amount}}<br><span class="text-small">({{taxBreakup.cgst.rate}}%)</span>{{else}}0.00{{/if}}
+                    </td>
+                    <td class="text-right">
+                        {{#if taxBreakup.sgst.amount}}{{taxBreakup.sgst.amount}}<br><span class="text-small">({{taxBreakup.sgst.rate}}%)</span>{{else}}0.00{{/if}}
+                    </td>
+                    <td class="text-right">
+                        {{#if taxBreakup.igst.amount}}{{taxBreakup.igst.amount}}<br><span class="text-small">({{taxBreakup.igst.rate}}%)</span>{{else}}0.00{{/if}}
+                    </td>
+                    <td class="text-right">
+                        {{#if taxBreakup.cess.amount}}{{taxBreakup.cess.amount}}<br><span class="text-small">({{taxBreakup.cess.rate}}%)</span>{{else}}0.00{{/if}}
+                    </td>
+                    <td class="text-right font-bold">{{lineTotal}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+
+        <!-- Totals Section -->
+        <div class="totals-section">
+            <div class="totals-left">
+                <div class="total-amount-words">
+                    <strong>Amount in Words:</strong><br>
+                    {{invoice.amountInWords}}
+                </div>
+                
+                <div class="tax-summary">
+                    <h4 class="tax-summary-title">Tax Summary</h4>
+                    <div class="tax-breakdown">
+                        <div class="tax-component">
+                            <div class="tax-component-label">CGST</div>
+                            <div class="tax-component-amount">₹{{taxSummary.cgst.totalTaxAmount}}</div>
+                        </div>
+                        <div class="tax-component">
+                            <div class="tax-component-label">SGST</div>
+                            <div class="tax-component-amount">₹{{taxSummary.sgst.totalTaxAmount}}</div>
+                        </div>
+                        <div class="tax-component">
+                            <div class="tax-component-label">IGST</div>
+                            <div class="tax-component-amount">₹{{taxSummary.igst.totalTaxAmount}}</div>
+                        </div>
+                        <div class="tax-component">
+                            <div class="tax-component-label">CESS</div>
+                            <div class="tax-component-amount">₹{{taxSummary.cess.totalTaxAmount}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="totals-right">
+                <table class="totals-table">
+                    <tr>
+                        <td class="label">Subtotal:</td>
+                        <td class="amount">₹{{invoice.subtotal}}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">CGST:</td>
+                        <td class="amount">₹{{taxSummary.cgst.totalTaxAmount}}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">SGST:</td>
+                        <td class="amount">₹{{taxSummary.sgst.totalTaxAmount}}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">IGST:</td>
+                        <td class="amount">₹{{taxSummary.igst.totalTaxAmount}}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">CESS:</td>
+                        <td class="amount">₹{{taxSummary.cess.totalTaxAmount}}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Grand Total:</td>
+                        <td>₹{{invoice.grandTotal}}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="qr-section">
+                <div class="qr-code">
+                    {{#if invoice.qrSvg}}
+                        {{{invoice.qrSvg}}}
+                    {{else if invoice.qrData}}
+                        <!-- QR Code from base64 data -->
+                        <img src="data:image/svg+xml;base64,{{invoice.qrData}}" alt="QR Code" style="width: 100%; height: 100%;" />
+                    {{else}}
+                        <div class="qr-placeholder">QR Code<br>(After IRN Generation)</div>
+                    {{/if}}
+                </div>
+                <div class="text-small">{{#if invoice.irn}}Signed QR Code{{else}}Pending IRN{{/if}}</div>
+            </div>
+            <div class="authorized-signatory">
+                <div class="signature-line">
+                    For {{seller.name}}<br>
+                    Authorized Signatory
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        {{#if terms}}
+        <div class="terms-section">
+            <div class="terms-title">Terms & Conditions:</div>
+            <ol class="terms-list">
+                {{#each terms}}
+                <li>{{this}}</li>
+                {{/each}}
+            </ol>
+        </div>
+        {{/if}}
+
+        <!-- Footer -->
+        <div class="footer-info">
+            {{#if meta.systemInfo}}{{meta.systemInfo}}{{else}}Generated by Inventara GST System{{/if}} | 
+            Template Version {{#if meta.templateVersion}}{{meta.templateVersion}}{{else}}1.0{{/if}} | 
+            Generated at: {{#if meta.generatedAt}}{{meta.generatedAt}}{{else}}{{currentDateTime}}{{/if}}
+        </div>
+    </div>
+</body>
+</html>

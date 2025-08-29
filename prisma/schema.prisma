@@ -1,0 +1,814 @@
+// This is your Prisma schema file for GST Compliance System
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// ENUMS
+// ===========================================
+
+enum InvoiceStatus {
+  DRAFT
+  FINALIZED
+  IRN_GENERATED
+  CANCELLED
+  IRN_CANCELLED
+}
+
+enum InvoiceDirection {
+  AR // Accounts Receivable (Sales)
+  AP // Accounts Payable (Purchase)
+}
+
+enum SubmissionStatus {
+  QUEUED
+  SUBMITTED
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum UserRole {
+  ADMIN
+  HOD
+  EMPLOYEE
+}
+
+enum RequisitionStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  CONVERTED_TO_PO
+  CANCELLED
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  SENT
+  ACKNOWLEDGED
+  PARTIALLY_RECEIVED
+  FULLY_RECEIVED
+  CANCELLED
+}
+
+enum GoodsReceiptStatus {
+  DRAFT
+  POSTED
+  REVERSED
+}
+
+// ===========================================
+// TENANCY FRAMEWORK
+// ===========================================
+
+model Tenant {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name       String   @db.VarChar(255)
+  gstin      String   @unique @db.VarChar(15)
+  stateCode  String   @map("state_code") @db.VarChar(2)
+  plan       String   @default("basic") @db.VarChar(50)
+  status     String   @default("active") @db.VarChar(20)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  departments          Department[]
+  users                User[]
+  approvalPolicies     ApprovalPolicy[]
+  suppliers            Supplier[]
+  customers            Customer[]
+  taxCodes             TaxCode[]
+  items                Item[]
+  invoices             Invoice[]
+  invoiceLines         InvoiceLine[]
+  itcLedger            ItcLedger[]
+  gstIrnSubmissions    GstIrnSubmission[]
+  gstEwaybillSubmissions GstEwaybillSubmission[]
+  requisitions         Requisition[]
+  purchaseOrders       PurchaseOrder[]
+  goodsReceipts        GoodsReceipt[]
+  approvalWorkflows    ApprovalWorkflow[]
+
+  @@map("tenants")
+}
+
+// ===========================================
+// RBAC ENTITIES
+// ===========================================
+
+model Department {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId    String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  code        String   @db.VarChar(20)
+  name        String   @db.VarChar(255)
+  headUserId  String?  @map("head_user_id") @db.Uuid
+  budgetLimit Decimal? @map("budget_limit") @db.Decimal(15, 2)
+  status      String   @default("active") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  head             User?            @relation("DepartmentHead", fields: [headUserId], references: [id])
+  users            User[]           @relation("DepartmentUsers")
+  approvalPolicies ApprovalPolicy[]
+  suppliers        Supplier[]
+  customers        Customer[]
+  invoices         Invoice[]
+  itcLedger        ItcLedger[]
+  gstIrnSubmissions GstIrnSubmission[]
+  gstEwaybillSubmissions GstEwaybillSubmission[]
+  requisitions     Requisition[]
+  purchaseOrders   PurchaseOrder[]
+  goodsReceipts    GoodsReceipt[]
+
+  @@unique([tenantId, code])
+  @@map("departments")
+}
+
+model User {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId     String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId String?  @map("department_id") @db.Uuid
+  role         UserRole
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  firstName    String   @map("first_name") @db.VarChar(100)
+  lastName     String   @map("last_name") @db.VarChar(100)
+  phone        String?  @db.VarChar(20)
+  isActive     Boolean  @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department       Department?      @relation("DepartmentUsers", fields: [departmentId], references: [id])
+  headOfDepartment Department?      @relation("DepartmentHead")
+  userSessions     UserSession[]
+  createdSuppliers Supplier[]
+  createdCustomers Customer[]
+  createdInvoices  Invoice[]
+  approvedInvoices Invoice[]        @relation("InvoiceApprover")
+  createdItcLedger ItcLedger[]
+  createdIrnSubmissions GstIrnSubmission[]
+  createdEwaybillSubmissions GstEwaybillSubmission[]
+  createdRequisitions Requisition[]  @relation("RequisitionCreator")
+  approvedRequisitions Requisition[] @relation("RequisitionApprover")
+  createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreator")
+  approvedPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderApprover")
+  receivedGoodsReceipts GoodsReceipt[]
+  qualityApprovedReceipts GoodsReceipt[] @relation("QualityApprover")
+  approvalWorkflows ApprovalWorkflow[]
+
+  @@unique([tenantId, email])
+  @@map("users")
+}
+
+model ApprovalPolicy {
+  id            String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId      String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId  String?  @map("department_id") @db.Uuid
+  feature       String   @db.VarChar(50) // 'REQUISITION', 'PURCHASE_ORDER', 'INVOICE', 'PAYMENT'
+  limitAmount   Decimal  @map("limit_amount") @db.Decimal(15, 2)
+  requiresRoles String[] @map("requires_roles") @db.VarChar(20)[]
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  department Department? @relation(fields: [departmentId], references: [id])
+
+  @@index([tenantId, feature, isActive])
+  @@map("approval_policies")
+}
+
+model UserSession {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  sessionToken String    @unique @map("session_token") @db.VarChar(255)
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz
+  ipAddress    String?   @map("ip_address") @db.VarChar(45)
+  userAgent    String?   @map("user_agent") @db.Text
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@map("user_sessions")
+}
+
+// ===========================================
+// MASTER DATA
+// ===========================================
+
+model Supplier {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId     String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId String?  @map("department_id") @db.Uuid
+  createdBy    String?  @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  code         String   @db.VarChar(50)
+  name         String   @db.VarChar(255)
+  gstin        String?  @db.VarChar(15)
+  stateCode    String?  @map("state_code") @db.VarChar(2)
+  addressLine1 String?  @map("address_line1") @db.VarChar(255)
+  addressLine2 String?  @map("address_line2") @db.VarChar(255)
+  city         String?  @db.VarChar(100)
+  pincode      String?  @db.VarChar(10)
+  phone        String?  @db.VarChar(20)
+  email        String?  @db.VarChar(100)
+  status       String   @default("active") @db.VarChar(20)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  creator    User?       @relation(fields: [createdBy], references: [id])
+  invoices   Invoice[]   @relation("SupplierInvoices")
+  purchaseOrders PurchaseOrder[]
+  goodsReceipts GoodsReceipt[]
+
+  @@unique([tenantId, code])
+  @@map("suppliers")
+}
+
+model Customer {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId     String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId String?  @map("department_id") @db.Uuid
+  createdBy    String?  @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  code         String   @db.VarChar(50)
+  name         String   @db.VarChar(255)
+  gstin        String?  @db.VarChar(15)
+  stateCode    String?  @map("state_code") @db.VarChar(2)
+  addressLine1 String?  @map("address_line1") @db.VarChar(255)
+  addressLine2 String?  @map("address_line2") @db.VarChar(255)
+  city         String?  @db.VarChar(100)
+  pincode      String?  @db.VarChar(10)
+  phone        String?  @db.VarChar(20)
+  email        String?  @db.VarChar(100)
+  status       String   @default("active") @db.VarChar(20)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  creator    User?       @relation(fields: [createdBy], references: [id])
+  invoices   Invoice[]   @relation("CustomerInvoices")
+
+  @@unique([tenantId, code])
+  @@map("customers")
+}
+
+model TaxCode {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId     String    @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  code         String    @db.VarChar(20)
+  component    String    @db.VarChar(20) // CGST, SGST, IGST, CESS
+  rate         Decimal   @db.Decimal(5, 2)
+  description  String?   @db.VarChar(255)
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  effectiveTo  DateTime? @map("effective_to") @db.Date
+  status       String    @default("active") @db.VarChar(20)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, code, component])
+  @@index([tenantId, code, component], name: "idx_tax_codes_code_component")
+  @@map("tax_codes")
+}
+
+model Item {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId        String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  sku             String   @db.VarChar(100)
+  name            String   @db.VarChar(255)
+  hsnCode         String?  @map("hsn_code") @db.VarChar(8)
+  sacCode         String?  @map("sac_code") @db.VarChar(6)
+  defaultTaxCode  String?  @map("default_tax_code") @db.VarChar(20)
+  unitOfMeasure   String?  @map("unit_of_measure") @db.VarChar(10)
+  description     String?  @db.Text
+  status          String   @default("active") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant             Tenant               @relation(fields: [tenantId], references: [id])
+  invoiceLines       InvoiceLine[]
+  requisitionLines   RequisitionLine[]
+  purchaseOrderLines PurchaseOrderLine[]
+  goodsReceiptLines  GoodsReceiptLine[]
+
+  @@unique([tenantId, sku])
+  @@map("items")
+}
+
+// ===========================================
+// INVOICE FRAMEWORK
+// ===========================================
+
+model Invoice {
+  id                      String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId                String           @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId            String?          @default(dbgenerated("department_id_default()")) @map("department_id") @db.Uuid
+  createdBy               String?          @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  approvedBy              String?          @map("approved_by") @db.Uuid
+  invoiceNumber           String           @map("invoice_number") @db.VarChar(50)
+  direction               InvoiceDirection
+  status                  InvoiceStatus    @default(DRAFT)
+  
+  // Parties
+  supplierId              String?          @map("supplier_id") @db.Uuid
+  customerId              String?          @map("customer_id") @db.Uuid
+  
+  // GST Details
+  placeOfSupply           String           @map("place_of_supply") @db.VarChar(2)
+  reverseChargeMechanism  Boolean          @default(false) @map("reverse_charge_mechanism")
+  
+  // Financial
+  subtotal                Decimal          @default(0) @db.Decimal(15, 2)
+  totalTax                Decimal          @default(0) @map("total_tax") @db.Decimal(15, 2)
+  totalAmount             Decimal          @default(0) @map("total_amount") @db.Decimal(15, 2)
+  
+  // E-Invoice Fields
+  irn                     String?          @db.VarChar(64) // Invoice Reference Number
+  ackNo                   String?          @map("ack_no") @db.VarChar(20) // Acknowledgment Number
+  ackDate                 DateTime?        @map("ack_date") @db.Timestamptz
+  signedQr                String?          @map("signed_qr") @db.Text // Base64 encoded QR code
+  qrSvg                   String?          @map("qr_svg") @db.Text // SVG QR code for printing
+  
+  // Dates
+  invoiceDate             DateTime         @map("invoice_date") @db.Date
+  dueDate                 DateTime?        @map("due_date") @db.Date
+  approvedAt              DateTime?        @map("approved_at") @db.Timestamptz
+  createdAt               DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant                  Tenant                  @relation(fields: [tenantId], references: [id])
+  department              Department?             @relation(fields: [departmentId], references: [id])
+  creator                 User?                   @relation(fields: [createdBy], references: [id])
+  approver                User?                   @relation("InvoiceApprover", fields: [approvedBy], references: [id])
+  supplier                Supplier?               @relation("SupplierInvoices", fields: [supplierId], references: [id])
+  customer                Customer?               @relation("CustomerInvoices", fields: [customerId], references: [id])
+  invoiceLines            InvoiceLine[]
+  itcLedger               ItcLedger[]
+  gstIrnSubmissions       GstIrnSubmission[]
+  gstEwaybillSubmissions  GstEwaybillSubmission[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId, invoiceNumber], name: "idx_invoices_tenant_number")
+  @@index([tenantId, invoiceDate], name: "idx_invoices_tenant_date")
+  @@index([tenantId, status], name: "idx_invoices_tenant_status")
+  @@index([irn], name: "idx_invoices_irn")
+  @@map("invoices")
+}
+
+model InvoiceLine {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId    String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  invoiceId   String   @map("invoice_id") @db.Uuid
+  lineNumber  Int      @map("line_number")
+  
+  // Item Details
+  itemId      String?  @map("item_id") @db.Uuid
+  itemSku     String?  @map("item_sku") @db.VarChar(100)
+  itemName    String   @map("item_name") @db.VarChar(255)
+  hsnCode     String?  @map("hsn_code") @db.VarChar(8)
+  sacCode     String?  @map("sac_code") @db.VarChar(6)
+  
+  // Quantities and Pricing
+  quantity    Decimal  @db.Decimal(15, 3)
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(15, 2)
+  lineAmount  Decimal  @map("line_amount") @db.Decimal(15, 2)
+  
+  // Tax Breakdown (JSON for flexibility)
+  taxBreakup  Json     @default("{}") @map("tax_breakup") // {cgst: 100, sgst: 100, igst: 0, cess: 0}
+  
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  invoice     Invoice    @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  item        Item?      @relation(fields: [itemId], references: [id])
+  itcLedger   ItcLedger[]
+
+  @@unique([tenantId, invoiceId, lineNumber])
+  @@index([invoiceId], name: "idx_invoice_lines_invoice_id")
+  @@index([tenantId, itemId], name: "idx_invoice_lines_tenant_item")
+  @@map("invoice_lines")
+}
+
+// ===========================================
+// ITC LEDGER
+// ===========================================
+
+model ItcLedger {
+  id              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId        String    @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId    String?   @default(dbgenerated("department_id_default()")) @map("department_id") @db.Uuid
+  createdBy       String?   @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  invoiceId       String    @map("invoice_id") @db.Uuid
+  invoiceLineId   String?   @map("invoice_line_id") @db.Uuid
+  
+  // Tax Component
+  taxComponent    String    @map("tax_component") @db.VarChar(20) // CGST, SGST, IGST, CESS
+  taxAmount       Decimal   @map("tax_amount") @db.Decimal(15, 2)
+  
+  // ITC Status
+  eligibleAmount  Decimal   @default(0) @map("eligible_amount") @db.Decimal(15, 2)
+  claimedAmount   Decimal   @default(0) @map("claimed_amount") @db.Decimal(15, 2)
+  blockedAmount   Decimal   @default(0) @map("blocked_amount") @db.Decimal(15, 2)
+  
+  // Tracking
+  periodMonth     Int       @map("period_month") // 1-12
+  periodYear      Int       @map("period_year")
+  claimDate       DateTime? @map("claim_date") @db.Timestamptz
+  
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant        Tenant       @relation(fields: [tenantId], references: [id])
+  department    Department?  @relation(fields: [departmentId], references: [id])
+  creator       User?        @relation(fields: [createdBy], references: [id])
+  invoice       Invoice      @relation(fields: [invoiceId], references: [id])
+  invoiceLine   InvoiceLine? @relation(fields: [invoiceLineId], references: [id])
+
+  @@index([tenantId, periodYear, periodMonth], name: "idx_itc_ledger_tenant_period")
+  @@index([invoiceId], name: "idx_itc_ledger_invoice")
+  @@map("itc_ledger")
+}
+
+// ===========================================
+// SUBMISSION TRACKING (ASYNC JOBS)
+// ===========================================
+
+model GstIrnSubmission {
+  id               String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId         String           @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId     String?          @default(dbgenerated("department_id_default()")) @map("department_id") @db.Uuid
+  createdBy        String?          @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  invoiceId        String           @map("invoice_id") @db.Uuid
+  idempotencyKey   String           @map("idempotency_key") @db.VarChar(100)
+  
+  status           SubmissionStatus @default(QUEUED)
+  
+  // Request/Response Data
+  requestPayload   Json?            @map("request_payload")
+  responsePayload  Json?            @map("response_payload")
+  lastError        String?          @map("last_error") @db.Text
+  
+  // Tracking
+  submittedAt      DateTime?        @map("submitted_at") @db.Timestamptz
+  completedAt      DateTime?        @map("completed_at") @db.Timestamptz
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  creator    User?       @relation(fields: [createdBy], references: [id])
+  invoice    Invoice     @relation(fields: [invoiceId], references: [id])
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, status], name: "idx_irn_submissions_tenant_status")
+  @@index([idempotencyKey], name: "idx_irn_submissions_idempotency")
+  @@map("gst_irn_submissions")
+}
+
+model GstEwaybillSubmission {
+  id               String           @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId         String           @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId     String?          @default(dbgenerated("department_id_default()")) @map("department_id") @db.Uuid
+  createdBy        String?          @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  invoiceId        String           @map("invoice_id") @db.Uuid
+  idempotencyKey   String           @map("idempotency_key") @db.VarChar(100)
+  
+  status           SubmissionStatus @default(QUEUED)
+  
+  // E-Waybill Details
+  ewbNumber        String?          @map("ewb_number") @db.VarChar(12) // E-Waybill Number
+  ewbDate          DateTime?        @map("ewb_date") @db.Timestamptz
+  validUntil       DateTime?        @map("valid_until") @db.Timestamptz
+  
+  // Request/Response Data
+  requestPayload   Json?            @map("request_payload")
+  responsePayload  Json?            @map("response_payload")
+  lastError        String?          @map("last_error") @db.Text
+  
+  // Tracking
+  submittedAt      DateTime?        @map("submitted_at") @db.Timestamptz
+  completedAt      DateTime?        @map("completed_at") @db.Timestamptz
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  creator    User?       @relation(fields: [createdBy], references: [id])
+  invoice    Invoice     @relation(fields: [invoiceId], references: [id])
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId, status], name: "idx_ewaybill_submissions_tenant_status")
+  @@index([idempotencyKey], name: "idx_ewaybill_submissions_idempotency")
+  @@map("gst_ewaybill_submissions")
+}
+
+// ===========================================
+// BUSINESS LOGIC TABLES (RBAC-enabled)
+// ===========================================
+
+model Requisition {
+  id                      String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId                String             @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId            String             @default(dbgenerated("department_id_default()")) @map("department_id") @db.Uuid
+  createdBy               String             @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  approvedBy              String?            @map("approved_by") @db.Uuid
+  
+  requisitionNumber       String             @map("requisition_number") @db.VarChar(50)
+  status                  RequisitionStatus  @default(DRAFT)
+  priority                String             @default("NORMAL") @db.VarChar(20) // LOW, NORMAL, HIGH, URGENT
+  
+  // Request Details
+  purpose                 String?            @db.Text
+  justification           String?            @db.Text
+  requestedDeliveryDate   DateTime?          @map("requested_delivery_date") @db.Date
+  
+  // Financial
+  totalEstimatedCost      Decimal            @default(0) @map("total_estimated_cost") @db.Decimal(15, 2)
+  
+  // Approval Tracking
+  submittedAt             DateTime?          @map("submitted_at") @db.Timestamptz
+  approvedAt              DateTime?          @map("approved_at") @db.Timestamptz
+  rejectionReason         String?            @map("rejection_reason") @db.Text
+  
+  createdAt               DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant           Tenant            @relation(fields: [tenantId], references: [id])
+  department       Department        @relation(fields: [departmentId], references: [id])
+  creator          User              @relation("RequisitionCreator", fields: [createdBy], references: [id])
+  approver         User?             @relation("RequisitionApprover", fields: [approvedBy], references: [id])
+  requisitionLines RequisitionLine[]
+
+  @@unique([tenantId, requisitionNumber])
+  @@map("requisitions")
+}
+
+model RequisitionLine {
+  id                    String             @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId              String             @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  requisitionId         String             @map("requisition_id") @db.Uuid
+  lineNumber            Int                @map("line_number")
+  
+  // Item Details
+  itemId                String?            @map("item_id") @db.Uuid
+  itemDescription       String             @map("item_description") @db.VarChar(500)
+  specification         String?            @db.Text
+  
+  // Quantities
+  requestedQuantity     Decimal            @map("requested_quantity") @db.Decimal(15, 3)
+  approvedQuantity      Decimal?           @map("approved_quantity") @db.Decimal(15, 3)
+  unitOfMeasure         String             @map("unit_of_measure") @db.VarChar(10)
+  
+  // Pricing
+  estimatedUnitPrice    Decimal?           @map("estimated_unit_price") @db.Decimal(15, 2)
+  estimatedTotalPrice   Decimal?           @map("estimated_total_price") @db.Decimal(15, 2)
+  
+  // Status
+  lineStatus            RequisitionStatus? @map("line_status")
+  
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant      Tenant      @relation(fields: [tenantId], references: [id])
+  requisition Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  item        Item?       @relation(fields: [itemId], references: [id])
+
+  @@unique([tenantId, requisitionId, lineNumber])
+  @@map("requisition_lines")
+}
+
+model PurchaseOrder {
+  id                    String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId              String               @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId          String               @default(dbgenerated("department_id_default()")) @map("department_id") @db.Uuid
+  createdBy             String               @default(dbgenerated("user_id_default()")) @map("created_by") @db.Uuid
+  approvedBy            String?              @map("approved_by") @db.Uuid
+  
+  poNumber              String               @map("po_number") @db.VarChar(50)
+  status                PurchaseOrderStatus  @default(DRAFT)
+  
+  // Supplier Details
+  supplierId            String               @map("supplier_id") @db.Uuid
+  
+  // Dates
+  poDate                DateTime             @map("po_date") @db.Date
+  expectedDeliveryDate  DateTime?            @map("expected_delivery_date") @db.Date
+  
+  // Terms
+  paymentTerms          String?              @map("payment_terms") @db.VarChar(255)
+  deliveryTerms         String?              @map("delivery_terms") @db.VarChar(255)
+  notes                 String?              @db.Text
+  
+  // Financial
+  subtotal              Decimal              @default(0) @db.Decimal(15, 2)
+  taxAmount             Decimal              @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  totalAmount           Decimal              @default(0) @map("total_amount") @db.Decimal(15, 2)
+  
+  // Approval Tracking
+  approvedAt            DateTime?            @map("approved_at") @db.Timestamptz
+  sentToSupplierAt      DateTime?            @map("sent_to_supplier_at") @db.Timestamptz
+  acknowledgedAt        DateTime?            @map("acknowledged_at") @db.Timestamptz
+  
+  createdAt             DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant            Tenant              @relation(fields: [tenantId], references: [id])
+  department        Department          @relation(fields: [departmentId], references: [id])
+  creator           User                @relation("PurchaseOrderCreator", fields: [createdBy], references: [id])
+  approver          User?               @relation("PurchaseOrderApprover", fields: [approvedBy], references: [id])
+  supplier          Supplier            @relation(fields: [supplierId], references: [id])
+  purchaseOrderLines PurchaseOrderLine[]
+  goodsReceipts     GoodsReceipt[]
+
+  @@unique([tenantId, poNumber])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderLine {
+  id                    String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId              String    @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  poId                  String    @map("po_id") @db.Uuid
+  lineNumber            Int       @map("line_number")
+  
+  // Item Details
+  itemId                String?   @map("item_id") @db.Uuid
+  itemDescription       String    @map("item_description") @db.VarChar(500)
+  specification         String?   @db.Text
+  
+  // Quantities
+  orderedQuantity       Decimal   @map("ordered_quantity") @db.Decimal(15, 3)
+  receivedQuantity      Decimal   @default(0) @map("received_quantity") @db.Decimal(15, 3)
+  unitOfMeasure         String    @map("unit_of_measure") @db.VarChar(10)
+  
+  // Pricing
+  unitPrice             Decimal   @map("unit_price") @db.Decimal(15, 2)
+  lineTotal             Decimal   @map("line_total") @db.Decimal(15, 2)
+  taxCode               String?   @map("tax_code") @db.VarChar(20)
+  taxAmount             Decimal   @default(0) @map("tax_amount") @db.Decimal(15, 2)
+  
+  // Delivery
+  promisedDeliveryDate  DateTime? @map("promised_delivery_date") @db.Date
+  
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  item          Item?         @relation(fields: [itemId], references: [id])
+  goodsReceiptLines GoodsReceiptLine[]
+
+  @@unique([tenantId, poId, lineNumber])
+  @@map("purchase_order_lines")
+}
+
+model GoodsReceipt {
+  id                      String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId                String              @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  departmentId            String?             @map("department_id") @db.Uuid
+  receivedBy              String              @default(dbgenerated("user_id_default()")) @map("received_by") @db.Uuid
+  
+  grnNumber               String              @map("grn_number") @db.VarChar(50)
+  status                  GoodsReceiptStatus  @default(DRAFT)
+  
+  // Reference Documents
+  poId                    String?             @map("po_id") @db.Uuid
+  supplierId              String              @map("supplier_id") @db.Uuid
+  supplierDeliveryNote    String?             @map("supplier_delivery_note") @db.VarChar(100)
+  
+  // Dates
+  receiptDate             DateTime            @map("receipt_date") @db.Date
+  supplierInvoiceDate     DateTime?           @map("supplier_invoice_date") @db.Date
+  supplierInvoiceNumber   String?             @map("supplier_invoice_number") @db.VarChar(100)
+  
+  // Quality Control
+  qualityCheckRequired    Boolean             @default(false) @map("quality_check_required")
+  qualityApprovedBy       String?             @map("quality_approved_by") @db.Uuid
+  qualityApprovedAt       DateTime?           @map("quality_approved_at") @db.Timestamptz
+  qualityRemarks          String?             @map("quality_remarks") @db.Text
+  
+  // Storage
+  warehouseLocation       String?             @map("warehouse_location") @db.VarChar(100)
+  
+  notes                   String?             @db.Text
+  
+  createdAt               DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant              Tenant             @relation(fields: [tenantId], references: [id])
+  department          Department?        @relation(fields: [departmentId], references: [id])
+  receiver            User               @relation(fields: [receivedBy], references: [id])
+  qualityApprover     User?              @relation("QualityApprover", fields: [qualityApprovedBy], references: [id])
+  purchaseOrder       PurchaseOrder?     @relation(fields: [poId], references: [id])
+  supplier            Supplier           @relation(fields: [supplierId], references: [id])
+  goodsReceiptLines   GoodsReceiptLine[]
+
+  @@unique([tenantId, grnNumber])
+  @@map("goods_receipts")
+}
+
+model GoodsReceiptLine {
+  id                String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId          String    @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  grnId             String    @map("grn_id") @db.Uuid
+  lineNumber        Int       @map("line_number")
+  
+  // Reference
+  poLineId          String?   @map("po_line_id") @db.Uuid
+  
+  // Item Details
+  itemId            String?   @map("item_id") @db.Uuid
+  itemDescription   String    @map("item_description") @db.VarChar(500)
+  
+  // Quantities
+  orderedQuantity   Decimal?  @map("ordered_quantity") @db.Decimal(15, 3)
+  receivedQuantity  Decimal   @map("received_quantity") @db.Decimal(15, 3)
+  acceptedQuantity  Decimal   @map("accepted_quantity") @db.Decimal(15, 3)
+  rejectedQuantity  Decimal   @default(0) @map("rejected_quantity") @db.Decimal(15, 3)
+  unitOfMeasure     String    @map("unit_of_measure") @db.VarChar(10)
+  
+  // Quality
+  rejectionReason   String?   @map("rejection_reason") @db.Text
+  
+  // Storage
+  binLocation       String?   @map("bin_location") @db.VarChar(50)
+  batchNumber       String?   @map("batch_number") @db.VarChar(50)
+  serialNumbers     String?   @map("serial_numbers") @db.Text
+  
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  tenant          Tenant             @relation(fields: [tenantId], references: [id])
+  goodsReceipt    GoodsReceipt       @relation(fields: [grnId], references: [id], onDelete: Cascade)
+  purchaseOrderLine PurchaseOrderLine? @relation(fields: [poLineId], references: [id])
+  item            Item?              @relation(fields: [itemId], references: [id])
+
+  @@unique([tenantId, grnId, lineNumber])
+  @@map("goods_receipt_lines")
+}
+
+model ApprovalWorkflow {
+  id               String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  tenantId         String   @default(dbgenerated("tenant_id_default()")) @map("tenant_id") @db.Uuid
+  
+  // Reference Document
+  documentType     String   @map("document_type") @db.VarChar(50) // 'REQUISITION', 'PURCHASE_ORDER', 'INVOICE', 'PAYMENT'
+  documentId       String   @map("document_id") @db.Uuid
+  documentNumber   String?  @map("document_number") @db.VarChar(50)
+  
+  // Approval Details
+  approverId       String   @map("approver_id") @db.Uuid
+  action           String   @db.VarChar(20) // 'APPROVED', 'REJECTED', 'RETURNED'
+  comments         String?  @db.Text
+  approvalLevel    Int      @default(1) @map("approval_level")
+  
+  // Amounts
+  requestedAmount  Decimal? @map("requested_amount") @db.Decimal(15, 2)
+  approvedAmount   Decimal? @map("approved_amount") @db.Decimal(15, 2)
+  
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  tenant   Tenant @relation(fields: [tenantId], references: [id])
+  approver User   @relation(fields: [approverId], references: [id])
+
+  @@index([tenantId, documentType, documentId])
+  @@index([approverId, createdAt])
+  @@map("approval_workflows")
+}

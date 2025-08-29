@@ -1,0 +1,614 @@
+/**
+ * RBAC Permissions System
+ * 
+ * Defines permissions for three-tier role hierarchy:
+ * - ADMIN: Full tenant-wide access
+ * - HOD: Department-scoped access with approval capabilities 
+ * - EMPLOYEE: Limited access to own records and read-only catalog
+ */
+
+export enum Permission {
+  // User & Role Management
+  USER_MANAGE_ALL = 'USER_MANAGE_ALL',
+  USER_READ_DEPT = 'USER_READ_DEPT',
+  USER_READ_SELF = 'USER_READ_SELF',
+  USER_UPDATE_SELF = 'USER_UPDATE_SELF',
+
+  // Tenant Settings
+  TENANT_SETTINGS_MANAGE = 'TENANT_SETTINGS_MANAGE',
+  TENANT_BRANDING_MANAGE = 'TENANT_BRANDING_MANAGE',
+  TENANT_PLANS_MANAGE = 'TENANT_PLANS_MANAGE',
+
+  // Department Management
+  DEPT_MANAGE_ALL = 'DEPT_MANAGE_ALL',
+  DEPT_READ_OWN = 'DEPT_READ_OWN',
+  DEPT_READ_ALL = 'DEPT_READ_ALL',
+
+  // Master Data - Items
+  ITEMS_CREATE = 'ITEMS_CREATE',
+  ITEMS_READ = 'ITEMS_READ',
+  ITEMS_UPDATE = 'ITEMS_UPDATE',
+  ITEMS_DELETE = 'ITEMS_DELETE',
+  ITEMS_PROPOSE_CHANGES = 'ITEMS_PROPOSE_CHANGES',
+
+  // Master Data - Suppliers
+  SUPPLIERS_CREATE = 'SUPPLIERS_CREATE',
+  SUPPLIERS_READ = 'SUPPLIERS_READ',
+  SUPPLIERS_UPDATE = 'SUPPLIERS_UPDATE',
+  SUPPLIERS_DELETE = 'SUPPLIERS_DELETE',
+  SUPPLIERS_PROPOSE_CHANGES = 'SUPPLIERS_PROPOSE_CHANGES',
+
+  // Master Data - Customers
+  CUSTOMERS_CREATE = 'CUSTOMERS_CREATE',
+  CUSTOMERS_READ = 'CUSTOMERS_READ',
+  CUSTOMERS_UPDATE = 'CUSTOMERS_UPDATE',
+  CUSTOMERS_DELETE = 'CUSTOMERS_DELETE',
+  CUSTOMERS_PROPOSE_CHANGES = 'CUSTOMERS_PROPOSE_CHANGES',
+
+  // Master Data - Tax Codes
+  TAX_CODES_CREATE = 'TAX_CODES_CREATE',
+  TAX_CODES_READ = 'TAX_CODES_READ',
+  TAX_CODES_UPDATE = 'TAX_CODES_UPDATE',
+  TAX_CODES_DELETE = 'TAX_CODES_DELETE',
+
+  // Requisitions
+  REQ_CREATE = 'REQ_CREATE',
+  REQ_READ_ALL = 'REQ_READ_ALL',
+  REQ_READ_DEPT = 'REQ_READ_DEPT',
+  REQ_READ_OWN = 'REQ_READ_OWN',
+  REQ_UPDATE_ALL = 'REQ_UPDATE_ALL',
+  REQ_UPDATE_DEPT = 'REQ_UPDATE_DEPT',
+  REQ_UPDATE_OWN = 'REQ_UPDATE_OWN',
+  REQ_APPROVE = 'REQ_APPROVE',
+  REQ_DELETE = 'REQ_DELETE',
+
+  // Purchase Orders
+  PO_CREATE = 'PO_CREATE',
+  PO_READ_ALL = 'PO_READ_ALL',
+  PO_READ_DEPT = 'PO_READ_DEPT',
+  PO_READ_OWN = 'PO_READ_OWN',
+  PO_UPDATE_ALL = 'PO_UPDATE_ALL',
+  PO_UPDATE_DEPT = 'PO_UPDATE_DEPT',
+  PO_APPROVE = 'PO_APPROVE',
+  PO_DELETE = 'PO_DELETE',
+
+  // Goods Receipts (GRN)
+  GRN_CREATE_ALL = 'GRN_CREATE_ALL',
+  GRN_CREATE_DEPT = 'GRN_CREATE_DEPT',
+  GRN_CREATE_ASSIGNED = 'GRN_CREATE_ASSIGNED',
+  GRN_READ_ALL = 'GRN_READ_ALL',
+  GRN_READ_DEPT = 'GRN_READ_DEPT',
+  GRN_READ_ASSIGNED = 'GRN_READ_ASSIGNED',
+  GRN_UPDATE_ALL = 'GRN_UPDATE_ALL',
+  GRN_UPDATE_DEPT = 'GRN_UPDATE_DEPT',
+  GRN_UPDATE_ASSIGNED = 'GRN_UPDATE_ASSIGNED',
+  GRN_QUALITY_APPROVE = 'GRN_QUALITY_APPROVE',
+
+  // Invoices (AP/AR)
+  INVOICE_CREATE = 'INVOICE_CREATE',
+  INVOICE_READ_ALL = 'INVOICE_READ_ALL',
+  INVOICE_READ_DEPT = 'INVOICE_READ_DEPT',
+  INVOICE_READ_OWN = 'INVOICE_READ_OWN',
+  INVOICE_UPDATE_ALL = 'INVOICE_UPDATE_ALL',
+  INVOICE_UPDATE_DEPT = 'INVOICE_UPDATE_DEPT',
+  INVOICE_UPDATE_OWN = 'INVOICE_UPDATE_OWN',
+  INVOICE_APPROVE = 'INVOICE_APPROVE',
+  INVOICE_DELETE = 'INVOICE_DELETE',
+  INVOICE_MATCH = 'INVOICE_MATCH',
+
+  // GST Console
+  GST_CONSOLE_ACCESS = 'GST_CONSOLE_ACCESS',
+  GST_IRN_GENERATE = 'GST_IRN_GENERATE',
+  GST_IRN_CANCEL = 'GST_IRN_CANCEL',
+  GST_EWAYBILL_GENERATE = 'GST_EWAYBILL_GENERATE',
+  GST_EWAYBILL_CANCEL = 'GST_EWAYBILL_CANCEL',
+  GST_RETURNS_FILE = 'GST_RETURNS_FILE',
+  GST_READ_ALL = 'GST_READ_ALL',
+  GST_READ_DEPT = 'GST_READ_DEPT',
+  GST_READ_OWN = 'GST_READ_OWN',
+
+  // Payments
+  PAYMENT_CREATE = 'PAYMENT_CREATE',
+  PAYMENT_APPROVE = 'PAYMENT_APPROVE',
+  PAYMENT_EXECUTE = 'PAYMENT_EXECUTE',
+  PAYMENT_READ_ALL = 'PAYMENT_READ_ALL',
+  PAYMENT_READ_DEPT = 'PAYMENT_READ_DEPT',
+  PAYMENT_READ_OWN = 'PAYMENT_READ_OWN',
+
+  // Reports & Analytics
+  REPORTS_ALL = 'REPORTS_ALL',
+  REPORTS_DEPT = 'REPORTS_DEPT',
+  REPORTS_PERSONAL = 'REPORTS_PERSONAL',
+  DASHBOARDS_ALL = 'DASHBOARDS_ALL',
+  DASHBOARDS_DEPT = 'DASHBOARDS_DEPT',
+  DASHBOARDS_PERSONAL = 'DASHBOARDS_PERSONAL',
+
+  // Data Export
+  EXPORT_ALL = 'EXPORT_ALL',
+  EXPORT_DEPT = 'EXPORT_DEPT',
+  EXPORT_OWN = 'EXPORT_OWN',
+
+  // Audit Logs
+  AUDIT_READ_ALL = 'AUDIT_READ_ALL',
+  AUDIT_READ_DEPT = 'AUDIT_READ_DEPT',
+  AUDIT_READ_OWN = 'AUDIT_READ_OWN',
+
+  // Approval Workflows
+  APPROVAL_MANAGE = 'APPROVAL_MANAGE',
+  APPROVAL_VIEW_ALL = 'APPROVAL_VIEW_ALL',
+  APPROVAL_VIEW_DEPT = 'APPROVAL_VIEW_DEPT',
+  APPROVAL_VIEW_OWN = 'APPROVAL_VIEW_OWN',
+
+  // System Administration
+  SYSTEM_SETTINGS = 'SYSTEM_SETTINGS',
+  SYSTEM_MAINTENANCE = 'SYSTEM_MAINTENANCE',
+  SYSTEM_BACKUP = 'SYSTEM_BACKUP',
+}
+
+export type Role = 'ADMIN' | 'HOD' | 'EMPLOYEE';
+
+/**
+ * Role-based permission mapping
+ * Defines which permissions each role has access to
+ */
+export const RolePermissions: Record<Role, Permission[]> = {
+  ADMIN: [
+    // Full system access
+    Permission.USER_MANAGE_ALL,
+    Permission.TENANT_SETTINGS_MANAGE,
+    Permission.TENANT_BRANDING_MANAGE,
+    Permission.TENANT_PLANS_MANAGE,
+    Permission.DEPT_MANAGE_ALL,
+    Permission.DEPT_READ_ALL,
+
+    // Master Data - Full CRUD
+    Permission.ITEMS_CREATE,
+    Permission.ITEMS_READ,
+    Permission.ITEMS_UPDATE,
+    Permission.ITEMS_DELETE,
+    Permission.SUPPLIERS_CREATE,
+    Permission.SUPPLIERS_READ,
+    Permission.SUPPLIERS_UPDATE,
+    Permission.SUPPLIERS_DELETE,
+    Permission.CUSTOMERS_CREATE,
+    Permission.CUSTOMERS_READ,
+    Permission.CUSTOMERS_UPDATE,
+    Permission.CUSTOMERS_DELETE,
+    Permission.TAX_CODES_CREATE,
+    Permission.TAX_CODES_READ,
+    Permission.TAX_CODES_UPDATE,
+    Permission.TAX_CODES_DELETE,
+
+    // Business Operations - Full access
+    Permission.REQ_CREATE,
+    Permission.REQ_READ_ALL,
+    Permission.REQ_UPDATE_ALL,
+    Permission.REQ_APPROVE,
+    Permission.REQ_DELETE,
+    Permission.PO_CREATE,
+    Permission.PO_READ_ALL,
+    Permission.PO_UPDATE_ALL,
+    Permission.PO_APPROVE,
+    Permission.PO_DELETE,
+    Permission.GRN_CREATE_ALL,
+    Permission.GRN_READ_ALL,
+    Permission.GRN_UPDATE_ALL,
+    Permission.GRN_QUALITY_APPROVE,
+
+    // Invoice & Financial - Full access
+    Permission.INVOICE_CREATE,
+    Permission.INVOICE_READ_ALL,
+    Permission.INVOICE_UPDATE_ALL,
+    Permission.INVOICE_APPROVE,
+    Permission.INVOICE_DELETE,
+    Permission.INVOICE_MATCH,
+    Permission.PAYMENT_CREATE,
+    Permission.PAYMENT_APPROVE,
+    Permission.PAYMENT_EXECUTE,
+    Permission.PAYMENT_READ_ALL,
+
+    // GST - Full console access
+    Permission.GST_CONSOLE_ACCESS,
+    Permission.GST_IRN_GENERATE,
+    Permission.GST_IRN_CANCEL,
+    Permission.GST_EWAYBILL_GENERATE,
+    Permission.GST_EWAYBILL_CANCEL,
+    Permission.GST_RETURNS_FILE,
+    Permission.GST_READ_ALL,
+
+    // Reporting & Analytics - All data
+    Permission.REPORTS_ALL,
+    Permission.DASHBOARDS_ALL,
+    Permission.EXPORT_ALL,
+    Permission.AUDIT_READ_ALL,
+
+    // Approvals - Manage policies
+    Permission.APPROVAL_MANAGE,
+    Permission.APPROVAL_VIEW_ALL,
+
+    // System Administration
+    Permission.SYSTEM_SETTINGS,
+    Permission.SYSTEM_MAINTENANCE,
+    Permission.SYSTEM_BACKUP,
+  ],
+
+  HOD: [
+    // User Management - Department only
+    Permission.USER_READ_DEPT,
+    Permission.USER_READ_SELF,
+    Permission.USER_UPDATE_SELF,
+    Permission.DEPT_READ_OWN,
+
+    // Master Data - Read + Propose Changes
+    Permission.ITEMS_READ,
+    Permission.ITEMS_PROPOSE_CHANGES,
+    Permission.SUPPLIERS_READ,
+    Permission.SUPPLIERS_PROPOSE_CHANGES,
+    Permission.CUSTOMERS_READ,
+    Permission.CUSTOMERS_PROPOSE_CHANGES,
+    Permission.TAX_CODES_READ,
+
+    // Business Operations - Department scope
+    Permission.REQ_CREATE,
+    Permission.REQ_READ_DEPT,
+    Permission.REQ_UPDATE_DEPT,
+    Permission.REQ_APPROVE, // Within department & limits
+    Permission.PO_CREATE, // Within limits
+    Permission.PO_READ_DEPT,
+    Permission.PO_UPDATE_DEPT,
+    Permission.PO_APPROVE, // Within limits
+    Permission.GRN_CREATE_DEPT,
+    Permission.GRN_READ_DEPT,
+    Permission.GRN_UPDATE_DEPT,
+    Permission.GRN_QUALITY_APPROVE,
+
+    // Invoice & Financial - Department scope
+    Permission.INVOICE_READ_DEPT,
+    Permission.PAYMENT_READ_DEPT,
+
+    // GST - Department documents
+    Permission.GST_CONSOLE_ACCESS,
+    Permission.GST_READ_DEPT,
+
+    // Reporting & Analytics - Department data
+    Permission.REPORTS_DEPT,
+    Permission.REPORTS_PERSONAL,
+    Permission.DASHBOARDS_DEPT,
+    Permission.DASHBOARDS_PERSONAL,
+    Permission.EXPORT_DEPT,
+    Permission.AUDIT_READ_DEPT,
+
+    // Approvals - View department
+    Permission.APPROVAL_VIEW_DEPT,
+    Permission.APPROVAL_VIEW_OWN,
+  ],
+
+  EMPLOYEE: [
+    // User Management - Self only
+    Permission.USER_READ_SELF,
+    Permission.USER_UPDATE_SELF,
+
+    // Master Data - Read catalog only
+    Permission.ITEMS_READ,
+    Permission.SUPPLIERS_READ,
+    Permission.CUSTOMERS_READ,
+    Permission.TAX_CODES_READ,
+
+    // Business Operations - Own records only
+    Permission.REQ_CREATE,
+    Permission.REQ_READ_OWN,
+    Permission.REQ_UPDATE_OWN,
+    Permission.PO_READ_OWN, // Read-only for own created POs
+    Permission.GRN_CREATE_ASSIGNED, // Only if assigned
+    Permission.GRN_READ_ASSIGNED,
+    Permission.GRN_UPDATE_ASSIGNED,
+
+    // Invoice & Financial - Own records
+    Permission.INVOICE_READ_OWN,
+    Permission.PAYMENT_READ_OWN, // Invoice payment status
+
+    // GST - Own documents only
+    Permission.GST_READ_OWN,
+
+    // Reporting & Analytics - Personal only
+    Permission.REPORTS_PERSONAL,
+    Permission.DASHBOARDS_PERSONAL,
+    Permission.EXPORT_OWN,
+    Permission.AUDIT_READ_OWN,
+
+    // Approvals - Own documents
+    Permission.APPROVAL_VIEW_OWN,
+  ],
+};
+
+/**
+ * Check if a role has a specific permission
+ */
+export function hasPermission(role: Role, permission: Permission): boolean {
+  return RolePermissions[role]?.includes(permission) ?? false;
+}
+
+/**
+ * Check if a role has any of the specified permissions
+ */
+export function hasAnyPermission(role: Role, permissions: Permission[]): boolean {
+  return permissions.some(permission => hasPermission(role, permission));
+}
+
+/**
+ * Check if a role has all of the specified permissions
+ */
+export function hasAllPermissions(role: Role, permissions: Permission[]): boolean {
+  return permissions.every(permission => hasPermission(role, permission));
+}
+
+/**
+ * Get all permissions for a specific role
+ */
+export function getRolePermissions(role: Role): Permission[] {
+  return RolePermissions[role] ?? [];
+}
+
+/**
+ * Feature-based permission groups for UI components
+ */
+export const FeaturePermissions = {
+  // Admin Console
+  ADMIN_CONSOLE: [
+    Permission.TENANT_SETTINGS_MANAGE,
+    Permission.USER_MANAGE_ALL,
+    Permission.SYSTEM_SETTINGS,
+  ],
+
+  // Master Data Management
+  MASTER_DATA_MANAGE: [
+    Permission.ITEMS_CREATE,
+    Permission.SUPPLIERS_CREATE,
+    Permission.CUSTOMERS_CREATE,
+    Permission.TAX_CODES_CREATE,
+  ],
+
+  // Master Data Proposals (HOD)
+  MASTER_DATA_PROPOSE: [
+    Permission.ITEMS_PROPOSE_CHANGES,
+    Permission.SUPPLIERS_PROPOSE_CHANGES,
+    Permission.CUSTOMERS_PROPOSE_CHANGES,
+  ],
+
+  // Procurement Operations
+  PROCUREMENT_CREATE: [
+    Permission.REQ_CREATE,
+    Permission.PO_CREATE,
+  ],
+
+  PROCUREMENT_APPROVE: [
+    Permission.REQ_APPROVE,
+    Permission.PO_APPROVE,
+  ],
+
+  // Warehouse Operations
+  WAREHOUSE_OPERATIONS: [
+    Permission.GRN_CREATE_ALL,
+    Permission.GRN_CREATE_DEPT,
+    Permission.GRN_CREATE_ASSIGNED,
+  ],
+
+  // Financial Operations
+  FINANCIAL_MANAGE: [
+    Permission.INVOICE_CREATE,
+    Permission.PAYMENT_CREATE,
+    Permission.PAYMENT_EXECUTE,
+  ],
+
+  FINANCIAL_APPROVE: [
+    Permission.INVOICE_APPROVE,
+    Permission.PAYMENT_APPROVE,
+  ],
+
+  // GST Console
+  GST_CONSOLE: [
+    Permission.GST_CONSOLE_ACCESS,
+  ],
+
+  GST_OPERATIONS: [
+    Permission.GST_IRN_GENERATE,
+    Permission.GST_EWAYBILL_GENERATE,
+    Permission.GST_RETURNS_FILE,
+  ],
+
+  // Reporting & Analytics
+  REPORTS_MANAGEMENT: [
+    Permission.REPORTS_ALL,
+    Permission.DASHBOARDS_ALL,
+  ],
+
+  REPORTS_DEPARTMENTAL: [
+    Permission.REPORTS_DEPT,
+    Permission.DASHBOARDS_DEPT,
+  ],
+
+  // Data Export
+  DATA_EXPORT: [
+    Permission.EXPORT_ALL,
+    Permission.EXPORT_DEPT,
+    Permission.EXPORT_OWN,
+  ],
+
+  // Audit & Compliance
+  AUDIT_ACCESS: [
+    Permission.AUDIT_READ_ALL,
+    Permission.AUDIT_READ_DEPT,
+  ],
+
+  // Approval Management
+  APPROVAL_MANAGEMENT: [
+    Permission.APPROVAL_MANAGE,
+  ],
+} as const;
+
+/**
+ * Check if a role has access to a feature
+ */
+export function hasFeatureAccess(role: Role, feature: keyof typeof FeaturePermissions): boolean {
+  const requiredPermissions = FeaturePermissions[feature];
+  return hasAnyPermission(role, requiredPermissions);
+}
+
+/**
+ * Navigation menu permissions
+ * Defines which menu items should be visible for each role
+ */
+export const NavigationPermissions = {
+  // Main Navigation
+  DASHBOARD: [], // Always visible
+  
+  // Procurement
+  REQUISITIONS: [Permission.REQ_CREATE, Permission.REQ_READ_OWN, Permission.REQ_READ_DEPT, Permission.REQ_READ_ALL],
+  PURCHASE_ORDERS: [Permission.PO_CREATE, Permission.PO_READ_OWN, Permission.PO_READ_DEPT, Permission.PO_READ_ALL],
+  GOODS_RECEIPTS: [Permission.GRN_CREATE_ASSIGNED, Permission.GRN_CREATE_DEPT, Permission.GRN_CREATE_ALL],
+  
+  // Inventory & Master Data
+  ITEMS_CATALOG: [Permission.ITEMS_READ],
+  SUPPLIERS: [Permission.SUPPLIERS_READ],
+  CUSTOMERS: [Permission.CUSTOMERS_READ],
+  
+  // Financial
+  INVOICES: [Permission.INVOICE_READ_OWN, Permission.INVOICE_READ_DEPT, Permission.INVOICE_READ_ALL],
+  PAYMENTS: [Permission.PAYMENT_READ_OWN, Permission.PAYMENT_READ_DEPT, Permission.PAYMENT_READ_ALL],
+  
+  // GST & Compliance
+  GST_CONSOLE: [Permission.GST_CONSOLE_ACCESS],
+  
+  // Reports
+  REPORTS: [Permission.REPORTS_PERSONAL, Permission.REPORTS_DEPT, Permission.REPORTS_ALL],
+  
+  // Administration
+  USER_MANAGEMENT: [Permission.USER_READ_DEPT, Permission.USER_MANAGE_ALL],
+  TENANT_SETTINGS: [Permission.TENANT_SETTINGS_MANAGE],
+  APPROVAL_POLICIES: [Permission.APPROVAL_MANAGE],
+  
+  // Audit
+  AUDIT_LOGS: [Permission.AUDIT_READ_OWN, Permission.AUDIT_READ_DEPT, Permission.AUDIT_READ_ALL],
+} as const;
+
+/**
+ * Check if a role can access a navigation item
+ */
+export function canAccessNavigation(role: Role, navItem: keyof typeof NavigationPermissions): boolean {
+  const requiredPermissions = NavigationPermissions[navItem];
+  return requiredPermissions.length === 0 || hasAnyPermission(role, requiredPermissions);
+}
+
+/**
+ * Department-specific permission context
+ * Used to determine if operations are allowed within department scope vs tenant-wide
+ */
+export interface PermissionContext {
+  role: Role;
+  tenantId: string;
+  departmentId?: string | null;
+  userId: string;
+}
+
+/**
+ * Check if a user can perform an operation on a resource
+ * considering department scoping and ownership
+ */
+export function canPerformOperation(
+  context: PermissionContext,
+  permission: Permission,
+  resourceOwnerId?: string,
+  resourceDepartmentId?: string,
+): boolean {
+  const { role, departmentId, userId } = context;
+
+  // Check if role has the permission
+  if (!hasPermission(role, permission)) {
+    return false;
+  }
+
+  // Admin can do everything
+  if (role === 'ADMIN') {
+    return true;
+  }
+
+  // For department-scoped permissions (HOD)
+  if (role === 'HOD') {
+    // Check if permission is department-scoped
+    if (permission.includes('_DEPT')) {
+      return departmentId === resourceDepartmentId;
+    }
+    // For general permissions, allow if in same department
+    return !resourceDepartmentId || departmentId === resourceDepartmentId;
+  }
+
+  // For employee-scoped permissions
+  if (role === 'EMPLOYEE') {
+    // Check if permission is for own records
+    if (permission.includes('_OWN') || permission.includes('_ASSIGNED')) {
+      return userId === resourceOwnerId;
+    }
+    // For read permissions, allow catalog access
+    if (permission.includes('_READ')) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Get available actions for a role on a specific resource type
+ */
+export function getAvailableActions(
+  role: Role,
+  resourceType: 'REQUISITION' | 'PURCHASE_ORDER' | 'INVOICE' | 'GOODS_RECEIPT' | 'SUPPLIER' | 'CUSTOMER' | 'ITEM',
+): string[] {
+  const actions: string[] = [];
+
+  switch (resourceType) {
+    case 'REQUISITION':
+      if (hasPermission(role, Permission.REQ_CREATE)) actions.push('CREATE');
+      if (hasAnyPermission(role, [Permission.REQ_READ_ALL, Permission.REQ_READ_DEPT, Permission.REQ_READ_OWN])) actions.push('READ');
+      if (hasAnyPermission(role, [Permission.REQ_UPDATE_ALL, Permission.REQ_UPDATE_DEPT, Permission.REQ_UPDATE_OWN])) actions.push('UPDATE');
+      if (hasPermission(role, Permission.REQ_APPROVE)) actions.push('APPROVE');
+      if (hasPermission(role, Permission.REQ_DELETE)) actions.push('DELETE');
+      break;
+
+    case 'PURCHASE_ORDER':
+      if (hasPermission(role, Permission.PO_CREATE)) actions.push('CREATE');
+      if (hasAnyPermission(role, [Permission.PO_READ_ALL, Permission.PO_READ_DEPT, Permission.PO_READ_OWN])) actions.push('READ');
+      if (hasAnyPermission(role, [Permission.PO_UPDATE_ALL, Permission.PO_UPDATE_DEPT])) actions.push('UPDATE');
+      if (hasPermission(role, Permission.PO_APPROVE)) actions.push('APPROVE');
+      if (hasPermission(role, Permission.PO_DELETE)) actions.push('DELETE');
+      break;
+
+    case 'INVOICE':
+      if (hasPermission(role, Permission.INVOICE_CREATE)) actions.push('CREATE');
+      if (hasAnyPermission(role, [Permission.INVOICE_READ_ALL, Permission.INVOICE_READ_DEPT, Permission.INVOICE_READ_OWN])) actions.push('read');
+      if (hasAnyPermission(role, [Permission.INVOICE_UPDATE_ALL, Permission.INVOICE_UPDATE_DEPT, Permission.INVOICE_UPDATE_OWN])) actions.push('UPDATE');
+      if (hasPermission(role, Permission.INVOICE_APPROVE)) actions.push('APPROVE');
+      if (hasPermission(role, Permission.INVOICE_DELETE)) actions.push('DELETE');
+      break;
+
+    case 'GOODS_RECEIPT':
+      if (hasAnyPermission(role, [Permission.GRN_CREATE_ALL, Permission.GRN_CREATE_DEPT, Permission.GRN_CREATE_ASSIGNED])) actions.push('CREATE');
+      if (hasAnyPermission(role, [Permission.GRN_READ_ALL, Permission.GRN_READ_DEPT, Permission.GRN_READ_ASSIGNED])) actions.push('read');
+      if (hasAnyPermission(role, [Permission.GRN_UPDATE_ALL, Permission.GRN_UPDATE_DEPT, Permission.GRN_UPDATE_ASSIGNED])) actions.push('UPDATE');
+      if (hasPermission(role, Permission.GRN_QUALITY_APPROVE)) actions.push('QUALITY_APPROVE');
+      break;
+
+    case 'SUPPLIER':
+    case 'CUSTOMER':
+    case 'ITEM':
+      const prefix = resourceType === 'SUPPLIER' ? 'SUPPLIERS' : resourceType === 'CUSTOMER' ? 'CUSTOMERS' : 'ITEMS';
+      if (hasPermission(role, Permission[`${prefix}_CREATE` as keyof typeof Permission])) actions.push('CREATE');
+      if (hasPermission(role, Permission[`${prefix}_READ` as keyof typeof Permission])) actions.push('read');
+      if (hasPermission(role, Permission[`${prefix}_UPDATE` as keyof typeof Permission])) actions.push('UPDATE');
+      if (hasPermission(role, Permission[`${prefix}_DELETE` as keyof typeof Permission])) actions.push('DELETE');
+      if (hasPermission(role, Permission[`${prefix}_PROPOSE_CHANGES` as keyof typeof Permission])) actions.push('PROPOSE_CHANGES');
+      break;
+  }
+
+  return actions;
+}

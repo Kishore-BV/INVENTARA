@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { TurnoverAnalysisContent } from "@/components/analytics/turnover-analysis-content"
+import { ComingSoonPopup } from "@/components/analytics/coming-soon-popup"
 
 export const metadata: Metadata = {
   title: "Turnover Analysis - Inventara",
@@ -7,5 +8,10 @@ export const metadata: Metadata = {
 }
 
 export default function TurnoverAnalysisPage() {
-  return <TurnoverAnalysisContent />
+  return (
+    <>
+      <ComingSoonPopup title="Turnover Analytics - Coming Soon" description="We are working on powerful turnover analytics. Stay tuned!" />
+      <TurnoverAnalysisContent />
+    </>
+  )
 }

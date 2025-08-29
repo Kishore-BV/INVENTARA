@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GST Invoice Template Test</title>
+    <link rel="stylesheet" href="invoice_a4.css">
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Header -->
+        <div class="invoice-header">
+            <div class="invoice-title">TAX INVOICE</div>
+            <div class="invoice-meta">
+                <div class="invoice-details">
+                    <h4>Invoice Details</h4>
+                    <div><strong>Invoice No:</strong> INV-2024-000123</div>
+                    <div><strong>Date:</strong> 2024-01-25</div>
+                    <div><strong>Due Date:</strong> 2024-02-24</div>
+                    <div><strong>Place of Supply:</strong> 29 - Karnataka</div>
+                </div>
+                <div class="irn-details">
+                    <h4>E-Invoice Details</h4>
+                    <div><strong>IRN:</strong> 01AAAPL1234C1Z5000000000000000000000000000000123456789012345</div>
+                    <div><strong>Ack No:</strong> 112010077115</div>
+                    <div><strong>Ack Date:</strong> 2024-01-25 14:30:00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seller and Buyer Details -->
+        <div class="party-section">
+            <div class="seller-details">
+                <div class="party-title">Seller Details</div>
+                <div class="party-name">Inventara Technologies Pvt Ltd</div>
+                <div class="party-address">
+                    No. 123, Technology Park<br>
+                    Electronic City Phase 1<br>
+                    Bangalore, Karnataka - 560100
+                </div>
+                <div class="party-gstin">GSTIN: 29AAAPL1234C1Z5</div>
+                <div class="party-state">State: 29 - Karnataka</div>
+                <div>Email: billing@inventara.com</div>
+                <div>Phone: +91-80-12345678</div>
+            </div>
+            <div class="buyer-details">
+                <div class="party-title">Buyer Details</div>
+                <div class="party-name">ABC Manufacturing Ltd</div>
+                <div class="party-address">
+                    456 Industrial Estate<br>
+                    Sector 8, IMT Manesar<br>
+                    Gurugram, Haryana - 122051
+                </div>
+                <div class="party-gstin">GSTIN: 27BBBFG5678D1Z5</div>
+                <div class="party-state">State: 06 - Haryana</div>
+                <div>Email: procurement@abcmfg.com</div>
+                <div>Phone: +91-124-9876543</div>
+            </div>
+        </div>
+
+        <!-- Line Items -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">Sr.</th>
+                    <th style="width: 25%;">Description</th>
+                    <th style="width: 10%;">HSN Code</th>
+                    <th style="width: 8%;">Qty</th>
+                    <th style="width: 8%;">Unit</th>
+                    <th style="width: 10%;">Unit Price</th>
+                    <th style="width: 8%;">Discount</th>
+                    <th style="width: 10%;">Taxable Value</th>
+                    <th style="width: 8%;">CGST</th>
+                    <th style="width: 8%;">SGST</th>
+                    <th style="width: 8%;">IGST</th>
+                    <th style="width: 8%;">CESS</th>
+                    <th style="width: 12%;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td class="text-left">Premium Steel Rods - Grade A</td>
+                    <td>72142090</td>
+                    <td class="text-right">100.00</td>
+                    <td>KG</td>
+                    <td class="text-right">450.00</td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right">45,000.00</td>
+                    <td class="text-right">4,050.00<br><span class="text-small">(9%)</span></td>
+                    <td class="text-right">4,050.00<br><span class="text-small">(9%)</span></td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right font-bold">53,100.00</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td class="text-left">Industrial Bolts M12x50</td>
+                    <td>73181590</td>
+                    <td class="text-right">500.00</td>
+                    <td>PCS</td>
+                    <td class="text-right">25.00</td>
+                    <td class="text-right">1,250.00</td>
+                    <td class="text-right">11,250.00</td>
+                    <td class="text-right">1,012.50<br><span class="text-small">(9%)</span></td>
+                    <td class="text-right">1,012.50<br><span class="text-small">(9%)</span></td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right font-bold">13,275.00</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td class="text-left">Precision Cutting Blades Set</td>
+                    <td>82023910</td>
+                    <td class="text-right">25.00</td>
+                    <td>SET</td>
+                    <td class="text-right">1,750.00</td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right">43,750.00</td>
+                    <td class="text-right">3,937.50<br><span class="text-small">(9%)</span></td>
+                    <td class="text-right">3,937.50<br><span class="text-small">(9%)</span></td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right">0.00</td>
+                    <td class="text-right font-bold">51,625.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Totals Section -->
+        <div class="totals-section">
+            <div class="totals-left">
+                <div class="total-amount-words">
+                    <strong>Amount in Words:</strong><br>
+                    Rupees One Lakh Eighteen Thousand Only
+                </div>
+                
+                <div class="tax-summary">
+                    <h4 class="tax-summary-title">Tax Summary</h4>
+                    <div class="tax-breakdown">
+                        <div class="tax-component">
+                            <div class="tax-component-label">CGST</div>
+                            <div class="tax-component-amount">₹9,000.00</div>
+                        </div>
+                        <div class="tax-component">
+                            <div class="tax-component-label">SGST</div>
+                            <div class="tax-component-amount">₹9,000.00</div>
+                        </div>
+                        <div class="tax-component">
+                            <div class="tax-component-label">IGST</div>
+                            <div class="tax-component-amount">₹0.00</div>
+                        </div>
+                        <div class="tax-component">
+                            <div class="tax-component-label">CESS</div>
+                            <div class="tax-component-amount">₹0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="totals-right">
+                <table class="totals-table">
+                    <tr>
+                        <td class="label">Subtotal:</td>
+                        <td class="amount">₹1,00,000.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Total Discount:</td>
+                        <td class="amount">₹1,250.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Taxable Amount:</td>
+                        <td class="amount">₹1,00,000.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">CGST:</td>
+                        <td class="amount">₹9,000.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">SGST:</td>
+                        <td class="amount">₹9,000.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">IGST:</td>
+                        <td class="amount">₹0.00</td>
+                    </tr>
+                    <tr>
+                        <td class="label">CESS:</td>
+                        <td class="amount">₹0.00</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Grand Total:</td>
+                        <td>₹1,18,000.00</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="qr-section">
+                <div class="qr-code">
+                    <div class="qr-placeholder">QR Code<br>(After IRN Generation)</div>
+                </div>
+                <div class="text-small">Signed QR Code</div>
+            </div>
+            <div class="authorized-signatory">
+                <div class="signature-line">
+                    For Inventara Technologies Pvt Ltd<br>
+                    Authorized Signatory
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms-section">
+            <div class="terms-title">Terms & Conditions:</div>
+            <ol class="terms-list">
+                <li>Payment terms: 30 days from invoice date</li>
+                <li>Interest @18% p.a. will be charged on delayed payments</li>
+                <li>All disputes subject to Bangalore jurisdiction only</li>
+                <li>Goods once sold will not be taken back</li>
+                <li>E&OE - Errors and omissions excepted</li>
+            </ol>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-info">
+            Generated by Inventara GST System v2024.1 | Template Version 1.0 | Generated at: 2024-01-25T14:30:45Z
+        </div>
+    </div>
+</body>
+</html>

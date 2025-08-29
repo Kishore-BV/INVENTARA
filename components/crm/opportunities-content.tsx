@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { 
   TrendingUp, 
@@ -137,22 +137,37 @@ const getStageIcon = (stage: Opportunity["stage"]) => {
 }
 
 export function OpportunitiesContent() {
+  const [oppsState, setOppsState] = useState<Opportunity[]>(opportunities)
   const [selectedStage, setSelectedStage] = useState<Opportunity["stage"] | "all">("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [newOpp, setNewOpp] = useState<Omit<Opportunity, "id" | "lastActivity"> & { lastActivity?: string}>(
+    {
+      name: "",
+      customer: "",
+      value: 0,
+      stage: "prospecting",
+      probability: 10,
+      expectedCloseDate: new Date().toISOString().split('T')[0],
+      assignedTo: "",
+      source: "Website",
+      description: ""
+    }
+  )
 
-  const filteredOpportunities = opportunities.filter(opportunity => {
+  const filteredOpportunities = oppsState.filter(opportunity => {
     if (selectedStage !== "all" && opportunity.stage !== selectedStage) return false
     if (searchQuery && !opportunity.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !opportunity.customer.toLowerCase().includes(searchQuery.toLowerCase())) return false
     return true
   })
 
-  const totalOpportunities = opportunities.length
-  const totalValue = opportunities.reduce((sum, o) => sum + o.value, 0)
-  const wonOpportunities = opportunities.filter(o => o.stage === "closed_won").length
-  const avgProbability = opportunities.reduce((sum, o) => sum + o.probability, 0) / opportunities.length
+  const totalOpportunities = oppsState.length
+  const totalValue = oppsState.reduce((sum, o) => sum + o.value, 0)
+  const wonOpportunities = oppsState.filter(o => o.stage === "closed_won").length
+  const avgProbability = oppsState.length ? (oppsState.reduce((sum, o) => sum + o.probability, 0) / oppsState.length) : 0
 
   const exportToCSV = () => {
     const headers = ["Name", "Customer", "Value", "Stage", "Probability", "Expected Close Date", "Assigned To"]
@@ -183,6 +198,36 @@ export function OpportunitiesContent() {
     setIsViewDialogOpen(true)
   }
 
+  const handleAddOpportunity = () => {
+    if (!newOpp.name || !newOpp.customer) return
+    const oppToAdd: Opportunity = {
+      id: `opp-${Date.now()}`,
+      name: newOpp.name,
+      customer: newOpp.customer,
+      value: Number(newOpp.value) || 0,
+      stage: newOpp.stage,
+      probability: Number(newOpp.probability) || 0,
+      expectedCloseDate: newOpp.expectedCloseDate,
+      assignedTo: newOpp.assignedTo,
+      source: newOpp.source,
+      description: newOpp.description,
+      lastActivity: newOpp.lastActivity || new Date().toISOString().split('T')[0]
+    }
+    setOppsState(prev => [oppToAdd, ...prev])
+    setIsAddDialogOpen(false)
+    setNewOpp({
+      name: "",
+      customer: "",
+      value: 0,
+      stage: "prospecting",
+      probability: 10,
+      expectedCloseDate: new Date().toISOString().split('T')[0],
+      assignedTo: "",
+      source: "Website",
+      description: ""
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6 md:p-8">
       {/* Header with Home Button */}
@@ -204,7 +249,7 @@ export function OpportunitiesContent() {
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
-          <Button className="bg-[#4B6587] hover:bg-[#3A5068]">
+          <Button className="bg-[#4B6587] hover:bg-[#3A5068]" onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Opportunity
           </Button>
@@ -382,6 +427,65 @@ export function OpportunitiesContent() {
       </Card>
 
       {/* Opportunity Details Dialog */}
+      {/* Add Opportunity Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Opportunity</DialogTitle>
+            <DialogDescription>Enter opportunity details</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Opportunity Name *</Label>
+              <Input value={newOpp.name} onChange={(e) => setNewOpp({ ...newOpp, name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Customer *</Label>
+              <Input value={newOpp.customer} onChange={(e) => setNewOpp({ ...newOpp, customer: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Value</Label>
+              <Input type="number" value={newOpp.value} onChange={(e) => setNewOpp({ ...newOpp, value: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Stage</Label>
+              <select className="w-full px-3 py-2 border rounded-md" value={newOpp.stage} onChange={(e) => setNewOpp({ ...newOpp, stage: e.target.value as Opportunity["stage"] })}>
+                <option value="prospecting">Prospecting</option>
+                <option value="qualification">Qualification</option>
+                <option value="proposal">Proposal</option>
+                <option value="negotiation">Negotiation</option>
+                <option value="closed_won">Closed Won</option>
+                <option value="closed_lost">Closed Lost</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Probability (%)</Label>
+              <Input type="number" value={newOpp.probability} onChange={(e) => setNewOpp({ ...newOpp, probability: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Expected Close</Label>
+              <Input type="date" value={newOpp.expectedCloseDate} onChange={(e) => setNewOpp({ ...newOpp, expectedCloseDate: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Assigned To</Label>
+              <Input value={newOpp.assignedTo} onChange={(e) => setNewOpp({ ...newOpp, assignedTo: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Source</Label>
+              <Input value={newOpp.source} onChange={(e) => setNewOpp({ ...newOpp, source: e.target.value })} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Description</Label>
+              <Input value={newOpp.description} onChange={(e) => setNewOpp({ ...newOpp, description: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddOpportunity}>Add Opportunity</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
@@ -455,3 +559,4 @@ export function OpportunitiesContent() {
     </div>
   )
 }
+

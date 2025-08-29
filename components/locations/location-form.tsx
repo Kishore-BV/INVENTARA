@@ -209,7 +209,7 @@ export function LocationForm({
       form.reset({
         name: location.name,
         warehouse: location.warehouse,
-        parentLocation: location.parentLocation || "",
+        parentLocation: location.parentLocation || "none",
         locationType: location.locationType,
         isScrapLocation: location.isScrapLocation,
         isReturnLocation: location.isReturnLocation,
@@ -228,7 +228,7 @@ export function LocationForm({
       form.reset({
         name: "",
         warehouse: warehouseId || "",
-        parentLocation: parentLocationId || "",
+        parentLocation: parentLocationId || "none",
         locationType: "internal",
         isScrapLocation: false,
         isReturnLocation: false,
@@ -247,7 +247,12 @@ export function LocationForm({
   }, [location, mode, warehouseId, parentLocationId, form])
 
   const onSubmit = (data: LocationFormData) => {
-    onSave(data)
+    // Handle "none" value for parentLocation
+    const processedData = {
+      ...data,
+      parentLocation: data.parentLocation === "none" ? undefined : data.parentLocation
+    }
+    onSave(processedData)
     form.reset()
   }
 
@@ -269,7 +274,10 @@ export function LocationForm({
 
   const generateLocationName = () => {
     const warehouse = warehouses.find(w => w.id === form.getValues('warehouse'))
-    const parent = locations.find(l => l.id === form.getValues('parentLocation'))
+    const parentLocationId = form.getValues('parentLocation')
+    const parent = parentLocationId && parentLocationId !== "none" 
+      ? locations.find(l => l.id === parentLocationId) 
+      : null
     
     if (warehouse) {
       let basePath = warehouse.code
@@ -395,7 +403,7 @@ export function LocationForm({
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="">None (Root level)</SelectItem>
+                              <SelectItem value="none">None (Root level)</SelectItem>
                               {filteredParentLocations.map((location) => (
                                 <SelectItem key={location.id} value={location.id}>
                                   <div className="flex items-center space-x-2">

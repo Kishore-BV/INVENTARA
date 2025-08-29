@@ -9,3 +9,8 @@ export const metadata: Metadata = {
 export default function CRMPage() {
   return <CRMContent />
 }
+
+
+
+
+

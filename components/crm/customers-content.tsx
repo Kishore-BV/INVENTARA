@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { 
   Users, 
   Plus, 
@@ -139,13 +139,28 @@ const getStatusIcon = (status: Customer["status"]) => {
 }
 
 export function CustomersContent() {
+  const [customersState, setCustomersState] = useState<Customer[]>(customers)
   const [selectedStatus, setSelectedStatus] = useState<Customer["status"] | "all">("all")
   const [selectedIndustry, setSelectedIndustry] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [newCustomer, setNewCustomer] = useState<Omit<Customer, "id" | "totalOrders" | "lastContact"> & { lastContact?: string; totalOrders?: number}>(
+    {
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      status: "prospect",
+      value: 0,
+      location: "",
+      industry: "",
+      assignedTo: ""
+    }
+  )
 
-  const filteredCustomers = customers.filter(customer => {
+  const filteredCustomers = customersState.filter(customer => {
     if (selectedStatus !== "all" && customer.status !== selectedStatus) return false
     if (selectedIndustry !== "all" && customer.industry !== selectedIndustry) return false
     if (searchQuery && !customer.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -154,12 +169,12 @@ export function CustomersContent() {
     return true
   })
 
-  const totalCustomers = customers.length
-  const activeCustomers = customers.filter(c => c.status === "active").length
-  const totalValue = customers.reduce((sum, c) => sum + c.value, 0)
+  const totalCustomers = customersState.length
+  const activeCustomers = customersState.filter(c => c.status === "active").length
+  const totalValue = customersState.reduce((sum, c) => sum + c.value, 0)
   const avgValue = totalValue / totalCustomers
 
-  const uniqueIndustries = Array.from(new Set(customers.map(c => c.industry)))
+  const uniqueIndustries = Array.from(new Set(customersState.map(c => c.industry)))
 
   const exportToCSV = () => {
     const headers = ["Name", "Company", "Email", "Phone", "Status", "Value", "Location", "Industry", "Assigned To"]
@@ -192,6 +207,37 @@ export function CustomersContent() {
     setIsViewDialogOpen(true)
   }
 
+  const handleAddCustomer = () => {
+    if (!newCustomer.name || !newCustomer.email || !newCustomer.company) return
+    const customerToAdd: Customer = {
+      id: `cust-${Date.now()}`,
+      name: newCustomer.name,
+      email: newCustomer.email,
+      phone: newCustomer.phone,
+      company: newCustomer.company,
+      status: newCustomer.status,
+      value: Number(newCustomer.value) || 0,
+      lastContact: newCustomer.lastContact || new Date().toISOString().split('T')[0],
+      totalOrders: newCustomer.totalOrders ?? 0,
+      location: newCustomer.location,
+      industry: newCustomer.industry,
+      assignedTo: newCustomer.assignedTo
+    }
+    setCustomersState(prev => [customerToAdd, ...prev])
+    setIsAddDialogOpen(false)
+    setNewCustomer({
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      status: "prospect",
+      value: 0,
+      location: "",
+      industry: "",
+      assignedTo: ""
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6 md:p-8">
       {/* Header with Home Button */}
@@ -213,7 +259,7 @@ export function CustomersContent() {
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
-          <Button className="bg-[#4B6587] hover:bg-[#3A5068]">
+          <Button className="bg-[#4B6587] hover:bg-[#3A5068]" onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Customer
           </Button>
@@ -403,6 +449,66 @@ export function CustomersContent() {
       </Card>
 
       {/* Customer Details Dialog */}
+      {/* Add Customer Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Customer</DialogTitle>
+            <DialogDescription>Enter customer details</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Name *</Label>
+              <Input value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Company *</Label>
+              <Input value={newCustomer.company} onChange={(e) => setNewCustomer({ ...newCustomer, company: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Email *</Label>
+              <Input type="email" value={newCustomer.email} onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input value={newCustomer.phone} onChange={(e) => setNewCustomer({ ...newCustomer, phone: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <select
+                className="w-full px-3 py-2 border rounded-md"
+                value={newCustomer.status}
+                onChange={(e) => setNewCustomer({ ...newCustomer, status: e.target.value as Customer["status"] })}
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="prospect">Prospect</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Value</Label>
+              <Input type="number" value={newCustomer.value} onChange={(e) => setNewCustomer({ ...newCustomer, value: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Industry</Label>
+              <Input value={newCustomer.industry} onChange={(e) => setNewCustomer({ ...newCustomer, industry: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Location</Label>
+              <Input value={newCustomer.location} onChange={(e) => setNewCustomer({ ...newCustomer, location: e.target.value })} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Assigned To</Label>
+              <Input value={newCustomer.assignedTo} onChange={(e) => setNewCustomer({ ...newCustomer, assignedTo: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddCustomer}>Add Customer</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
@@ -476,3 +582,4 @@ export function CustomersContent() {
     </div>
   )
 }
+

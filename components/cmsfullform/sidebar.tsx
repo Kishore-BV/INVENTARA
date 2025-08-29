@@ -217,6 +217,234 @@ const menuData: MenuSection[] = [
     ],
   },
   {
+    id: "ierp",
+    label: "iERP",
+    items: [
+      {
+        id: "finance-controlling",
+        label: "Finance & Controlling (FI/CO)",
+        href: "/ierp/finance",
+        icon: DollarSign,
+        badge: "Phase 1",
+        isNew: true,
+        children: [
+          {
+            id: "general-ledger",
+            label: "General Ledger",
+            href: "/ierp/finance/general-ledger",
+            icon: BarChart3,
+          },
+          {
+            id: "accounts-payable",
+            label: "Accounts Payable",
+            href: "/ierp/finance/accounts-payable",
+            icon: CreditCard,
+          },
+          {
+            id: "accounts-receivable",
+            label: "Accounts Receivable",
+            href: "/ierp/finance/accounts-receivable",
+            icon: Receipt,
+          },
+          {
+            id: "asset-management",
+            label: "Asset Management",
+            href: "/ierp/finance/asset-management",
+            icon: Building2,
+          },
+          {
+            id: "financial-reporting",
+            label: "Financial Reporting",
+            href: "/ierp/finance/reporting",
+            icon: FileText,
+          },
+          {
+            id: "cost-center",
+            label: "Cost Center Analysis",
+            href: "/ierp/finance/cost-center",
+            icon: PieChart,
+          },
+        ],
+      },
+      {
+        id: "materials-management",
+        label: "Materials Management (MM)",
+        href: "/ierp/materials",
+        icon: Package,
+        badge: "Phase 1",
+        isNew: true,
+        children: [
+          {
+            id: "procurement-workflows",
+            label: "Procurement Workflows",
+            href: "/ierp/materials/procurement",
+            icon: ShoppingCart,
+          },
+          {
+            id: "purchase-requisitions",
+            label: "Purchase Requisitions",
+            href: "/ierp/materials/requisitions",
+            icon: FileText,
+          },
+          {
+            id: "purchase-orders-mm",
+            label: "Purchase Orders",
+            href: "/ierp/materials/purchase-orders",
+            icon: Receipt,
+          },
+          {
+            id: "inventory-management",
+            label: "Inventory Management",
+            href: "/ierp/materials/inventory",
+            icon: Database,
+          },
+          {
+            id: "supplier-database",
+            label: "Supplier Database",
+            href: "/ierp/materials/suppliers",
+            icon: Users2,
+          },
+          {
+            id: "vendor-management",
+            label: "Vendor Management",
+            href: "/ierp/materials/vendors",
+            icon: Building2,
+          },
+        ],
+      },
+      {
+        id: "sales-distribution",
+        label: "Sales & Distribution (SD)",
+        href: "/ierp/sales",
+        icon: TrendingUp,
+        badge: "Phase 1",
+        isNew: true,
+        children: [
+          {
+            id: "customer-order-management",
+            label: "Customer Order Management",
+            href: "/ierp/sales/orders",
+            icon: ShoppingCart,
+          },
+          {
+            id: "pricing-management",
+            label: "Pricing Management",
+            href: "/ierp/sales/pricing",
+            icon: DollarSign,
+          },
+          {
+            id: "invoicing",
+            label: "Invoicing",
+            href: "/ierp/sales/invoicing",
+            icon: Receipt,
+          },
+          {
+            id: "delivery-tracking",
+            label: "Delivery Tracking",
+            href: "/ierp/sales/delivery",
+            icon: Truck,
+          },
+          {
+            id: "sales-reporting",
+            label: "Sales Reporting",
+            href: "/ierp/sales/reporting",
+            icon: BarChart3,
+          },
+          {
+            id: "sales-forecasting",
+            label: "Sales Forecasting",
+            href: "/ierp/sales/forecasting",
+            icon: Target,
+          },
+        ],
+      },
+      {
+        id: "production-planning",
+        label: "Production Planning (PP)",
+        href: "/ierp/production",
+        icon: Settings,
+        badge: "Phase 2",
+        children: [
+          {
+            id: "manufacturing-orders",
+            label: "Manufacturing Orders",
+            href: "/ierp/production/orders",
+            icon: CheckSquare,
+          },
+          {
+            id: "bom-management",
+            label: "Bill of Materials (BOM)",
+            href: "/ierp/production/bom",
+            icon: Layers,
+          },
+          {
+            id: "work-centers",
+            label: "Work Centers",
+            href: "/ierp/production/work-centers",
+            icon: Monitor,
+          },
+          {
+            id: "capacity-planning",
+            label: "Capacity Planning",
+            href: "/ierp/production/capacity",
+            icon: Activity,
+          },
+          {
+            id: "shop-floor-control",
+            label: "Shop-floor Control",
+            href: "/ierp/production/shop-floor",
+            icon: Play,
+          },
+        ],
+      },
+      {
+        id: "human-capital",
+        label: "Human Capital Management (HCM)",
+        href: "/ierp/hcm",
+        icon: Users,
+        badge: "Phase 2",
+        children: [
+          {
+            id: "employee-records",
+            label: "Employee Records",
+            href: "/ierp/hcm/employees",
+            icon: Users2,
+          },
+          {
+            id: "payroll",
+            label: "Payroll",
+            href: "/ierp/hcm/payroll",
+            icon: Wallet,
+          },
+          {
+            id: "recruitment",
+            label: "Recruitment",
+            href: "/ierp/hcm/recruitment",
+            icon: UserPlus,
+          },
+          {
+            id: "attendance-tracking",
+            label: "Attendance Tracking",
+            href: "/ierp/hcm/attendance",
+            icon: Clock,
+          },
+          {
+            id: "leave-management",
+            label: "Leave Management",
+            href: "/ierp/hcm/leave",
+            icon: Calendar,
+          },
+          {
+            id: "performance-tracking",
+            label: "Performance Tracking",
+            href: "/ierp/hcm/performance",
+            icon: Star,
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "crm",
     label: "CRM",
     items: [
@@ -728,7 +956,7 @@ export default function InventaraSidebar() {
         }}
         title={menuState === "collapsed" && !isHovered && !isMobile ? item.label : undefined}
       >
-        <item.icon className="h-4 w-4 flex-shrink-0 sidebar-menu-icon" />
+        {item.icon && <item.icon className="h-4 w-4 flex-shrink-0 sidebar-menu-icon" />}
 
         {showText && (
           <>
@@ -864,6 +1092,7 @@ export default function InventaraSidebar() {
 
             <div className="px-2 py-4 border-t border-gray-200 dark:border-[#1F1F23]">
               <div className="space-y-1">
+                <NavItem item={{ id: "ierp", label: "iERP", href: "/ierp", icon: BarChart3, badge: "Active" }} />
                 <NavItem item={{ id: "settings", label: "Settings", href: "/settings", icon: Settings }} />
                 <NavItem item={{ id: "help", label: "Help", href: "/help", icon: HelpCircle }} />
               </div>
@@ -974,6 +1203,7 @@ export default function InventaraSidebar() {
 
           <div className="px-2 py-4 border-t border-gray-200 dark:border-[#1F1F23]">
             <div className="space-y-1">
+              <NavItem item={{ id: "ierp", label: "iERP", href: "/ierp", icon: BarChart3, badge: "Active" }} />
               <NavItem item={{ id: "settings", label: "Settings", href: "/settings", icon: Settings }} />
               <NavItem item={{ id: "help", label: "Help", href: "/help", icon: HelpCircle }} />
             </div>

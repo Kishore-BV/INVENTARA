@@ -719,3 +719,239 @@ export interface StockMoveFilter {
   dateTo?: Date
   reference?: string
 }
+
+// Supplier Management Enhanced Types
+export interface SupplierContact {
+  id: string
+  supplierId: string
+  name: string
+  title?: string
+  email?: string
+  phone?: string
+  mobile?: string
+  isPrimary: boolean
+  department?: string
+  notes?: string
+}
+
+export interface SupplierContract {
+  id: string
+  supplierId: string
+  supplier: Supplier
+  contractNumber: string
+  contractType: 'purchase' | 'service' | 'maintenance' | 'framework'
+  startDate: Date
+  endDate: Date
+  value: number
+  currency: string
+  status: 'draft' | 'active' | 'expired' | 'terminated' | 'renewed'
+  paymentTerms: string
+  deliveryTerms: string
+  qualityRequirements?: string
+  penaltyClauses?: string
+  renewalTerms?: string
+  documents: Document[]
+  notes?: string
+  createdBy: string
+  approvedBy?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface SupplierPerformance {
+  id: string
+  supplierId: string
+  supplier: Supplier
+  period: 'monthly' | 'quarterly' | 'yearly'
+  startDate: Date
+  endDate: Date
+  metrics: SupplierMetrics
+  overallRating: number
+  qualityRating: number
+  deliveryRating: number
+  serviceRating: number
+  costRating: number
+  totalOrders: number
+  totalValue: number
+  onTimeDeliveries: number
+  qualityIssues: number
+  notes?: string
+  reviewedBy: string
+  reviewDate: Date
+  createdAt: Date
+}
+
+export interface SupplierMetrics {
+  deliveryPerformance: {
+    onTimeDeliveryRate: number
+    averageDeliveryTime: number
+    lateDeliveries: number
+    earlyDeliveries: number
+  }
+  qualityPerformance: {
+    defectRate: number
+    rejectionRate: number
+    qualityIncidents: number
+    correctionRequests: number
+  }
+  servicePerformance: {
+    responsiveness: number
+    communicationRating: number
+    supportQuality: number
+    issueResolutionTime: number
+  }
+  costPerformance: {
+    priceCompetitiveness: number
+    costSavings: number
+    priceStability: number
+    paymentCompliance: number
+  }
+}
+
+export interface SupplierProduct {
+  id: string
+  supplierId: string
+  productId: string
+  supplier: Supplier
+  product: Product
+  supplierProductCode: string
+  supplierProductName: string
+  unitPrice: number
+  currency: string
+  minOrderQuantity: number
+  leadTimeDays: number
+  isPreferred: boolean
+  qualityRating: number
+  lastPurchaseDate?: Date
+  totalPurchased: number
+  notes?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface SupplierAssessment {
+  id: string
+  supplierId: string
+  supplier: Supplier
+  assessmentType: 'initial' | 'periodic' | 'audit' | 'quality'
+  assessmentDate: Date
+  assessor: string
+  criteria: AssessmentCriteria[]
+  overallScore: number
+  status: 'passed' | 'failed' | 'conditional' | 'pending'
+  recommendations: string[]
+  actionItems: ActionItem[]
+  nextAssessmentDate?: Date
+  documents: Document[]
+  notes?: string
+  createdAt: Date
+}
+
+export interface AssessmentCriteria {
+  id: string
+  category: 'financial' | 'quality' | 'delivery' | 'service' | 'compliance'
+  criterion: string
+  weight: number
+  score: number
+  maxScore: number
+  comments?: string
+}
+
+export interface ActionItem {
+  id: string
+  description: string
+  priority: 'low' | 'medium' | 'high' | 'critical'
+  assignedTo?: string
+  dueDate?: Date
+  status: 'open' | 'in_progress' | 'completed' | 'cancelled'
+  completedDate?: Date
+  notes?: string
+}
+
+export interface SupplierNote {
+  id: string
+  supplierId: string
+  noteType: 'general' | 'quality' | 'delivery' | 'commercial' | 'compliance'
+  priority: 'low' | 'medium' | 'high'
+  subject: string
+  content: string
+  isInternal: boolean
+  attachments: Document[]
+  createdBy: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface SupplierRisk {
+  id: string
+  supplierId: string
+  supplier: Supplier
+  riskType: 'financial' | 'operational' | 'compliance' | 'quality' | 'geo_political'
+  riskLevel: 'low' | 'medium' | 'high' | 'critical'
+  description: string
+  impact: 'low' | 'medium' | 'high'
+  probability: 'low' | 'medium' | 'high'
+  mitigationPlan?: string
+  status: 'identified' | 'assessing' | 'mitigating' | 'monitoring' | 'resolved'
+  owner: string
+  identifiedDate: Date
+  reviewDate?: Date
+  notes?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+// Supplier Filter and Search Types
+export interface SupplierFilter {
+  status?: 'active' | 'inactive'
+  type?: 'vendor' | 'customer' | 'both'
+  category?: string
+  country?: string
+  paymentTerms?: string
+  ratingMin?: number
+  ratingMax?: number
+  search?: string
+  hasContracts?: boolean
+  hasPerformanceData?: boolean
+}
+
+export interface SupplierAnalytics {
+  totalSuppliers: number
+  activeSuppliers: number
+  newSuppliersThisMonth: number
+  averageRating: number
+  totalSpend: number
+  topSuppliersBySpend: SupplierSpendData[]
+  performanceTrends: PerformanceTrend[]
+  riskDistribution: RiskDistribution
+  contractExpirations: ContractExpiration[]
+}
+
+export interface SupplierSpendData {
+  supplier: Supplier
+  totalSpend: number
+  orderCount: number
+  averageOrderValue: number
+  lastOrderDate: Date
+}
+
+export interface PerformanceTrend {
+  period: string
+  averageRating: number
+  onTimeDeliveryRate: number
+  qualityScore: number
+  issueCount: number
+}
+
+export interface RiskDistribution {
+  low: number
+  medium: number
+  high: number
+  critical: number
+}
+
+export interface ContractExpiration {
+  contract: SupplierContract
+  daysUntilExpiration: number
+  status: 'expired' | 'expiring_soon' | 'upcoming'
+}

@@ -9,3 +9,8 @@ export const metadata: Metadata = {
 export default function LeadsPage() {
   return <LeadsContent />
 }
+
+
+
+
+

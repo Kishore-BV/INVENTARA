@@ -9,3 +9,8 @@ export const metadata: Metadata = {
 export default function AttendanceManagementPage() {
   return <AttendanceManagementContent />
 }
+
+
+
+
+

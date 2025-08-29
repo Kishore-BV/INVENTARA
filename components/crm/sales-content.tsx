@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Progress } from "@/components/ui/progress"
 import { 
   DollarSign, 
@@ -137,22 +137,34 @@ const getStatusIcon = (status: Sale["status"]) => {
 }
 
 export function SalesContent() {
+  const [salesState, setSalesState] = useState<Sale[]>(sales)
   const [selectedStatus, setSelectedStatus] = useState<Sale["status"] | "all">("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [newSale, setNewSale] = useState<Omit<Sale, "id">>({
+    customer: "",
+    product: "",
+    amount: 0,
+    status: "pending",
+    date: new Date().toISOString().split('T')[0],
+    salesperson: "",
+    commission: 0,
+    paymentMethod: ""
+  })
 
-  const filteredSales = sales.filter(sale => {
+  const filteredSales = salesState.filter(sale => {
     if (selectedStatus !== "all" && sale.status !== selectedStatus) return false
     if (searchQuery && !sale.customer.toLowerCase().includes(searchQuery.toLowerCase()) &&
         !sale.product.toLowerCase().includes(searchQuery.toLowerCase())) return false
     return true
   })
 
-  const totalSales = sales.length
-  const completedSales = sales.filter(s => s.status === "completed").length
-  const totalRevenue = sales.filter(s => s.status === "completed").reduce((sum, s) => sum + s.amount, 0)
-  const totalCommission = sales.filter(s => s.status === "completed").reduce((sum, s) => sum + s.commission, 0)
+  const totalSales = salesState.length
+  const completedSales = salesState.filter(s => s.status === "completed").length
+  const totalRevenue = salesState.filter(s => s.status === "completed").reduce((sum, s) => sum + s.amount, 0)
+  const totalCommission = salesState.filter(s => s.status === "completed").reduce((sum, s) => sum + s.commission, 0)
 
   const exportToCSV = () => {
     const headers = ["Customer", "Product", "Amount", "Status", "Date", "Salesperson", "Commission", "Payment Method"]
@@ -184,6 +196,28 @@ export function SalesContent() {
     setIsViewDialogOpen(true)
   }
 
+  const handleAddSale = () => {
+    if (!newSale.customer || !newSale.product || !newSale.amount) return
+    const saleToAdd: Sale = {
+      id: `sale-${Date.now()}`,
+      ...newSale,
+      amount: Number(newSale.amount) || 0,
+      commission: Number(newSale.commission) || 0
+    }
+    setSalesState(prev => [saleToAdd, ...prev])
+    setIsAddDialogOpen(false)
+    setNewSale({
+      customer: "",
+      product: "",
+      amount: 0,
+      status: "pending",
+      date: new Date().toISOString().split('T')[0],
+      salesperson: "",
+      commission: 0,
+      paymentMethod: ""
+    })
+  }
+
   return (
     <div className="flex flex-col gap-6 p-6 md:p-8">
       {/* Header with Home Button */}
@@ -205,7 +239,7 @@ export function SalesContent() {
             <Download className="h-4 w-4" />
             Export CSV
           </Button>
-          <Button className="bg-[#4B6587] hover:bg-[#3A5068]">
+          <Button className="bg-[#4B6587] hover:bg-[#3A5068]" onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Sale
           </Button>
@@ -418,6 +452,58 @@ export function SalesContent() {
       </Card>
 
       {/* Sale Details Dialog */}
+      {/* Add Sale Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Sale</DialogTitle>
+            <DialogDescription>Enter sale details</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Customer *</Label>
+              <Input value={newSale.customer} onChange={(e) => setNewSale({ ...newSale, customer: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Product *</Label>
+              <Input value={newSale.product} onChange={(e) => setNewSale({ ...newSale, product: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Amount *</Label>
+              <Input type="number" value={newSale.amount} onChange={(e) => setNewSale({ ...newSale, amount: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <select className="w-full px-3 py-2 border rounded-md" value={newSale.status} onChange={(e) => setNewSale({ ...newSale, status: e.target.value as Sale["status"] })}>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label>Date</Label>
+              <Input type="date" value={newSale.date} onChange={(e) => setNewSale({ ...newSale, date: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Salesperson</Label>
+              <Input value={newSale.salesperson} onChange={(e) => setNewSale({ ...newSale, salesperson: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Commission</Label>
+              <Input type="number" value={newSale.commission} onChange={(e) => setNewSale({ ...newSale, commission: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>Payment Method</Label>
+              <Input value={newSale.paymentMethod} onChange={(e) => setNewSale({ ...newSale, paymentMethod: e.target.value })} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddSale}>Add Sale</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
@@ -479,3 +565,4 @@ export function SalesContent() {
     </div>
   )
 }
+
